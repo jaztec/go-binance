@@ -12,7 +12,7 @@ import (
 const (
 	BaseStreamURI = "wss://stream.binance.com:9443"
 
-	pongWait   = 60 * time.Second
+	pongWait   = 5 * time.Minute
 	pingPeriod = 5 * time.Minute
 )
 
