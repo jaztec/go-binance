@@ -49,19 +49,20 @@ func (a *api) request(method string, path string, query Parameters) (*http.Reque
 	}
 	if requiresSignature(path) {
 		sig = generateSignature(a.cfg.Secret, qS)
+		qS += "&signature=" + sig
 	}
 
 	var body io.Reader
 	switch method {
 	case http.MethodGet:
-		path += "?" + qS + "&signature=" + sig
+		path += "?" + qS
 	case http.MethodPost:
-		body = strings.NewReader(qS + "&signature=" + sig)
+		body = strings.NewReader(qS)
 	}
 
-	fullUrl := baseApi + path
+	fullUrl := a.cfg.BaseURI + path
 
-	log.Printf("Calling %s", fullUrl)
+	log.Printf("Calling %s %s with %s", method, fullUrl, qS)
 
 	r, err := http.NewRequest(method, fullUrl, body)
 	if err != nil {

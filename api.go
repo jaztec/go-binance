@@ -1,6 +1,7 @@
 package binance
 
 import (
+	"context"
 	"gitlab.jaztec.info/checkers/checkers/services/binance/model"
 	"net/http"
 	"strconv"
@@ -8,7 +9,7 @@ import (
 )
 
 const (
-	baseApi = "https://api.binance.com"
+	BaseApiURI = "https://api.binance.com"
 
 	APIKeyHeaderName = "X-MBX-APIKEY"
 )
@@ -51,14 +52,17 @@ func (wc weightChecker) checkResponse(response *http.Response) *BinanceAPIError 
 }
 
 type APIConfig struct {
-	Key    string
-	Secret string
+	Key           string
+	Secret        string
+	BaseURI       string
+	BaseStreamURI string
 }
 
 type API interface {
 	Prices(symbol string) ([]model.BinancePrice, error)
 	OrderBook(symbol string, limit int) (model.Order, error)
 	UserOrderBook(symbol string, timestamp int64, limit int) ([]model.UserOrder, error)
+	StartUserDataStream(ctx context.Context) error
 }
 
 //symbol	STRING	YES
