@@ -11,7 +11,8 @@ func (bae BinanceAPIError) Error() string {
 }
 
 var (
-	BinanceTooMuchCalls = BinanceAPIError{"too much calls to API"}
-	BinanceBlocked      = BinanceAPIError{"IP ban active"}
-	BinanceAtTimeout    = BinanceAPIError{"API in timeout now"}
+	TooMuchCalls     = BinanceAPIError{"too much calls to API"}
+	Blocked          = BinanceAPIError{"IP ban active"}
+	AtTimeout        = BinanceAPIError{"API in timeout now"}
+	NoSymbolProvided = BinanceAPIError{"no symbol provided"}
 )

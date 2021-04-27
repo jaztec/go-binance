@@ -1,18 +1,14 @@
 package binance
 
 import (
-	"encoding/json"
-	"gitlab.jaztec.info/checkers/checkers/model"
+	"gitlab.jaztec.info/checkers/checkers/services/binance/model"
 	"net/http"
-	"net/url"
 	"strconv"
 	"time"
 )
 
 const (
 	baseApi = "https://api.binance.com"
-
-	tickerPath = "/api/v3/ticker/price"
 
 	APIKeyHeaderName = "X-MBX-APIKEY"
 )
@@ -45,11 +41,11 @@ func (wc weightChecker) checkResponse(response *http.Response) *BinanceAPIError 
 	}
 	if response.StatusCode == http.StatusTooManyRequests {
 		fn(response)
-		return &BinanceTooMuchCalls
+		return &TooMuchCalls
 	}
 	if response.StatusCode == http.StatusTeapot {
 		fn(response)
-		return &BinanceBlocked
+		return &Blocked
 	}
 	return nil
 }
@@ -61,41 +57,21 @@ type APIConfig struct {
 
 type API interface {
 	Prices(symbol string) ([]model.BinancePrice, error)
+	OrderBook(symbol string, limit int) (model.Order, error)
+	UserOrderBook(symbol string, timestamp int64, limit int) ([]model.UserOrder, error)
 }
+
+//symbol	STRING	YES
+//orderId	LONG	NO
+//startTime	LONG	NO
+//endTime	LONG	NO
+//limit	INT	NO	Default 500; max 1000.
+//recvWindow	LONG	NO	The value cannot be greater than 60000
+//timestamp	LONG	YES
 
 type api struct {
 	cfg     APIConfig
 	checker weightChecker
-}
-
-func (a *api) Prices(symbol string) ([]model.BinancePrice, error) {
-	var q url.Values
-	if symbol != "" {
-		q = url.Values{}
-		q.Set("symbol", symbol)
-	}
-
-	body, err := a.doRequest(http.MethodGet, tickerPath, q, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	var list []model.BinancePrice
-	if symbol != "" {
-		var p model.BinancePrice
-		err = json.Unmarshal(body, &p)
-		if err != nil {
-			return nil, err
-		}
-		list = []model.BinancePrice{p}
-	} else {
-		err = json.Unmarshal(body, &list)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return list, nil
 }
 
 func NewAPI(cfg APIConfig) API {

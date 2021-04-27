@@ -1,0 +1,65 @@
+package binance
+
+import (
+	"encoding/json"
+	"fmt"
+	"gitlab.jaztec.info/checkers/checkers/services/binance/model"
+	"net/http"
+	"strconv"
+)
+
+const (
+	orderBookPath     = "/api/v3/depth"
+	userOrderBookPath = "/api/v3/allOrders"
+)
+
+func init() {
+	requireSignature(userOrderBookPath)
+}
+
+func (a *api) UserOrderBook(symbol string, timestamp int64, limit int) (uo []model.UserOrder, err error) {
+	if symbol == "" {
+		return uo, NoSymbolProvided
+	}
+	q := Parameters{}
+	q.Set("symbol", symbol)
+	if limit != 0 {
+		q.Set("limit", strconv.Itoa(limit))
+	}
+	q.Set("timestamp", strconv.FormatInt(timestamp, 10))
+
+	body, err := a.doRequest(http.MethodGet, userOrderBookPath, q)
+	if err != nil {
+		return uo, err
+	}
+
+	err = json.Unmarshal(body, &uo)
+	if err != nil {
+		return uo, fmt.Errorf("encountered error while unmarshaling '%s' into model.UserOrder", body)
+	}
+
+	return uo, nil
+}
+
+func (a *api) OrderBook(symbol string, limit int) (o model.Order, err error) {
+	if symbol == "" {
+		return o, NoSymbolProvided
+	}
+	q := Parameters{}
+	q.Set("symbol", symbol)
+	if limit != 0 {
+		q.Set("limit", strconv.Itoa(limit))
+	}
+
+	body, err := a.doRequest(http.MethodGet, orderBookPath, q)
+	if err != nil {
+		return o, err
+	}
+
+	err = json.Unmarshal(body, &o)
+	if err != nil {
+		return o, fmt.Errorf("encountered error while unmarshaling '%s' into model.Order", body)
+	}
+
+	return o, nil
+}
