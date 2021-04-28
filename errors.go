@@ -2,17 +2,17 @@ package binance
 
 import "fmt"
 
-type BinanceAPIError struct {
+type APIError struct {
 	msg string
 }
 
-func (bae BinanceAPIError) Error() string {
+func (bae APIError) Error() string {
 	return fmt.Sprintf("msg=%s", bae.msg)
 }
 
 var (
-	TooMuchCalls     = BinanceAPIError{"too much calls to API"}
-	Blocked          = BinanceAPIError{"IP ban active"}
-	AtTimeout        = BinanceAPIError{"API in timeout now"}
-	NoSymbolProvided = BinanceAPIError{"no symbol provided"}
+	TooMuchCalls     = APIError{"too much calls to API"}
+	Blocked          = APIError{"IP ban active"}
+	AtTimeout        = APIError{"API in timeout now"}
+	NoSymbolProvided = APIError{"no symbol provided"}
 )

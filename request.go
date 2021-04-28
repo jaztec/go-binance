@@ -95,7 +95,7 @@ func (a *api) doRequest(method, path string, q Parameters) ([]byte, error) {
 	}
 
 	if res.StatusCode != http.StatusOK {
-		var resErr model.BinanceError
+		var resErr model.Error
 		err = json.Unmarshal(resBody, &resErr)
 		if err != nil {
 			return nil, err

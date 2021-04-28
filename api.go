@@ -28,7 +28,7 @@ func (wc weightChecker) deactivate(seconds int) {
 	}(seconds)
 }
 
-func (wc weightChecker) checkResponse(response *http.Response) *BinanceAPIError {
+func (wc weightChecker) checkResponse(response *http.Response) *APIError {
 	fn := func(response *http.Response) {
 		retry := response.Header.Get("Retry-After")
 		if retry == "" {
@@ -59,7 +59,7 @@ type APIConfig struct {
 }
 
 type API interface {
-	Prices(symbol string) ([]model.BinancePrice, error)
+	Prices(symbol string) ([]model.Price, error)
 	OrderBook(symbol string, limit int) (model.Order, error)
 	UserOrderBook(symbol string, startTime, endTime int64, limit int) ([]model.UserOrder, error)
 	StartUserDataStream(ctx context.Context) error

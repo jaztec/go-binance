@@ -8,7 +8,7 @@ import (
 
 const pricesPath = "/api/v3/ticker/price"
 
-func (a *api) Prices(symbol string) ([]model2.BinancePrice, error) {
+func (a *api) Prices(symbol string) ([]model2.Price, error) {
 	var q Parameters
 	if symbol != "" {
 		q = Parameters{}
@@ -20,14 +20,14 @@ func (a *api) Prices(symbol string) ([]model2.BinancePrice, error) {
 		return nil, err
 	}
 
-	var list []model2.BinancePrice
+	var list []model2.Price
 	if symbol != "" {
-		var p model2.BinancePrice
+		var p model2.Price
 		err = json.Unmarshal(body, &p)
 		if err != nil {
 			return nil, err
 		}
-		list = []model2.BinancePrice{p}
+		list = []model2.Price{p}
 	} else {
 		err = json.Unmarshal(body, &list)
 		if err != nil {
