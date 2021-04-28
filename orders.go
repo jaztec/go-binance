@@ -6,6 +6,7 @@ import (
 	"gitlab.jaztec.info/checkers/checkers/services/binance/model"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 const (
@@ -17,16 +18,22 @@ func init() {
 	requireSignature(userOrderBookPath)
 }
 
-func (a *api) UserOrderBook(symbol string, timestamp int64, limit int) (uo []model.UserOrder, err error) {
+func (a *api) UserOrderBook(symbol string, startTime, endTime int64, limit int) (uo []model.UserOrder, err error) {
 	if symbol == "" {
 		return uo, NoSymbolProvided
 	}
 	q := Parameters{}
 	q.Set("symbol", symbol)
+	if startTime != 0 {
+		q.Set("startTime", strconv.FormatInt(startTime, 10))
+	}
+	if endTime != 0 {
+		q.Set("endTime", strconv.FormatInt(endTime, 10))
+	}
 	if limit != 0 {
 		q.Set("limit", strconv.Itoa(limit))
 	}
-	q.Set("timestamp", strconv.FormatInt(timestamp, 10))
+	q.Set("timestamp", strconv.FormatInt(time.Now().Unix()*1000, 10))
 
 	body, err := a.doRequest(http.MethodGet, userOrderBookPath, q)
 	if err != nil {

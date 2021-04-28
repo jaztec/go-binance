@@ -61,8 +61,9 @@ type APIConfig struct {
 type API interface {
 	Prices(symbol string) ([]model.BinancePrice, error)
 	OrderBook(symbol string, limit int) (model.Order, error)
-	UserOrderBook(symbol string, timestamp int64, limit int) ([]model.UserOrder, error)
+	UserOrderBook(symbol string, startTime, endTime int64, limit int) ([]model.UserOrder, error)
 	StartUserDataStream(ctx context.Context) error
+	UserAccount() (ai model.AccountInfo, err error)
 }
 
 //symbol	STRING	YES
