@@ -2,10 +2,12 @@ package binance
 
 import (
 	"context"
-	"gitlab.jaztec.info/checkers/checkers/services/binance/model"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/go-kit/kit/log"
+	"gitlab.jaztec.info/checkers/checkers/services/binance/model"
 )
 
 const (
@@ -77,14 +79,16 @@ type API interface {
 type api struct {
 	cfg     APIConfig
 	checker weightChecker
+	logger  log.Logger
 }
 
-func NewAPI(cfg APIConfig) API {
+func NewAPI(cfg APIConfig, logger log.Logger) API {
 	return &api{
 		cfg: cfg,
 		checker: weightChecker{
 			allowed: true,
 			weight:  0,
 		},
+		logger: logger,
 	}
 }

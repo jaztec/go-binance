@@ -5,12 +5,13 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
-	"gitlab.jaztec.info/checkers/checkers/services/binance/model"
+	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strings"
+
+	"gitlab.jaztec.info/checkers/checkers/services/binance/model"
 )
 
 var signatureRequired = make(map[string]struct{})
@@ -62,7 +63,7 @@ func (a *api) request(method string, path string, query Parameters) (*http.Reque
 
 	fullUrl := a.cfg.BaseURI + path
 
-	log.Printf("Calling %s %s with %s", method, fullUrl, qS)
+	_ = a.logger.Log("calling", fmt.Sprintf("%s %s", method, fullUrl), "params", qS)
 
 	r, err := http.NewRequest(method, fullUrl, body)
 	if err != nil {

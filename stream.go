@@ -3,10 +3,11 @@ package binance
 import (
 	"context"
 	"fmt"
-	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/gorilla/websocket"
 )
 
 const (
@@ -35,7 +36,7 @@ func (a *api) keepAlive(ctx context.Context, path string, interval time.Duration
 func (a *api) stream(ctx context.Context, p Parameters) (chan []byte, chan []byte, error) {
 	fullURI := fmt.Sprintf("%s/stream?%s", a.cfg.BaseStreamURI, p.Encode())
 	d := &websocket.Dialer{}
-	log.Printf("Starting stream on %s", fullURI)
+	_ = a.logger.Log("starting stream", fullURI)
 	conn, _, err := d.Dial(fullURI, nil)
 	if err != nil {
 		return nil, nil, err
