@@ -3,9 +3,10 @@ package binance
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"time"
+
+	"github.com/go-kit/kit/log"
 
 	"github.com/gorilla/websocket"
 )
@@ -44,38 +45,17 @@ func (a *api) stream(ctx context.Context, p Parameters) (chan []byte, chan []byt
 
 	var reads = make(chan []byte, 5)
 	var writes = make(chan []byte, 5)
-	go pingPong(ctx, conn)
-	go readPump(conn, reads)
-	go writePump(ctx, conn, writes)
+	go readPump(a.logger, conn, reads)
+	go writePump(a.logger, ctx, conn, writes)
 
 	return reads, writes, nil
 }
 
-func pingPong(ctx context.Context, conn *websocket.Conn) {
-	_ = conn.SetReadDeadline(time.Now().Add(pongWait))
-	conn.SetPongHandler(func(string) error {
-		return conn.SetReadDeadline(time.Now().Add(pongWait))
-	})
-	t := time.NewTicker(pingPeriod)
-	defer t.Stop()
-
-	for {
-		select {
-		case _ = <-ctx.Done():
-			return
-		case <-t.C:
-			if err := conn.WriteMessage(websocket.PingMessage, []byte{}); err != nil {
-				return
-			}
-		}
-	}
-}
-
-func readPump(conn *websocket.Conn, ch chan []byte) {
+func readPump(logger log.Logger, conn *websocket.Conn, ch chan []byte) {
 	defer func() {
 		err := conn.Close()
 		if err != nil {
-			log.Printf("Encountered error while closing socket: %s", err)
+			_ = logger.Log("close", "readPump", "error", err)
 		}
 	}()
 	for {
@@ -88,17 +68,28 @@ func readPump(conn *websocket.Conn, ch chan []byte) {
 	}
 }
 
-func writePump(ctx context.Context, conn *websocket.Conn, ch chan []byte) {
+func writePump(logger log.Logger, ctx context.Context, conn *websocket.Conn, ch chan []byte) {
+	_ = conn.SetReadDeadline(time.Now().Add(pongWait))
+	conn.SetPongHandler(func(string) error {
+		return conn.SetReadDeadline(time.Now().Add(pongWait))
+	})
+	t := time.NewTicker(pingPeriod)
+	defer t.Stop()
+
 	for {
 		select {
 		case msg := <-ch:
 			if err := conn.WriteMessage(websocket.TextMessage, msg); err != nil {
-				log.Printf("Received error while writing to connection, write pump closing: %s", err)
+				_ = logger.Log("write", "writePump", "error", err)
 				return
 			}
 		case _ = <-ctx.Done():
-			log.Printf("Closing socket writePump after close signal")
+			_ = logger.Log("writePump", "close signal")
 			return
+		case <-t.C:
+			if err := conn.WriteMessage(websocket.PingMessage, []byte{}); err != nil {
+				return
+			}
 		}
 	}
 }
