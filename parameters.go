@@ -33,7 +33,7 @@ func (v Parameters) Encode() string {
 			}
 			buf.WriteString(keyEscaped)
 			buf.WriteByte('=')
-			buf.WriteString(url.QueryEscape(v))
+			buf.WriteString(v)
 		}
 	}
 	return buf.String()

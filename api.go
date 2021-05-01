@@ -1,7 +1,6 @@
 package binance
 
 import (
-	"context"
 	"net/http"
 	"strconv"
 	"time"
@@ -64,26 +63,25 @@ type API interface {
 	Prices(symbol string) ([]model.Price, error)
 	OrderBook(symbol string, limit int) (model.Order, error)
 	UserOrderBook(symbol string, startTime, endTime int64, limit int) ([]model.UserOrder, error)
-	StartUserDataStream(ctx context.Context) error
 	UserAccount() (ai model.AccountInfo, err error)
+
+	Streamer() Streamer
 }
 
-//symbol	STRING	YES
-//orderId	LONG	NO
-//startTime	LONG	NO
-//endTime	LONG	NO
-//limit	INT	NO	Default 500; max 1000.
-//recvWindow	LONG	NO	The value cannot be greater than 60000
-//timestamp	LONG	YES
-
 type api struct {
-	cfg     APIConfig
-	checker weightChecker
-	logger  log.Logger
+	cfg      APIConfig
+	checker  weightChecker
+	logger   log.Logger
+	streamID uint64
+	streamer Streamer
+}
+
+func (a *api) Streamer() Streamer {
+	return a.streamer
 }
 
 func NewAPI(cfg APIConfig, logger log.Logger) API {
-	return &api{
+	a := &api{
 		cfg: cfg,
 		checker: weightChecker{
 			allowed: true,
@@ -91,4 +89,8 @@ func NewAPI(cfg APIConfig, logger log.Logger) API {
 		},
 		logger: logger,
 	}
+
+	a.streamer = newStreamer(a, logger)
+
+	return a
 }

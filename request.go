@@ -56,7 +56,9 @@ func (a *api) request(method string, path string, query Parameters) (*http.Reque
 	var body io.Reader
 	switch method {
 	case http.MethodGet:
-		path += "?" + qS
+		if qS != "" {
+			path += "?" + qS
+		}
 	case http.MethodPost:
 		body = strings.NewReader(qS)
 	}
