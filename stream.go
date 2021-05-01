@@ -48,22 +48,52 @@ type streamer struct {
 type subscribeMessage struct {
 	Method SubscribeType `json:"method"`
 	Params []string      `json:"params"`
-	ID     uint64        `json:"nextID"`
+	ID     uint64        `json:"lastID"`
 }
 
 type stream struct {
 	conn          *websocket.Conn
 	subscriptions uint16
 	writes        chan []byte
-	nextID        uint64
+	lastID        uint64
 	subscribers   subscriberMap
 }
 
+func (s *stream) unsubscribe(params []string) error {
+	atomic.AddUint64(&s.lastID, 1)
+
+	msg := subscribeMessage{
+		Method: Unsubscribe,
+		Params: params,
+		ID:     s.lastID,
+	}
+
+	b, err := json.Marshal(msg)
+	if err != nil {
+		return err
+	}
+	s.writes <- b
+
+	for _, param := range params {
+		// TODO This should be composed better, only close actual channels that are requesting unsubscribe
+		if list, ok := s.subscribers[param]; ok {
+			for _, ch := range list {
+				close(ch)
+			}
+			delete(s.subscribers, param)
+		}
+	}
+
+	return nil
+}
+
 func (s *stream) subscribe(params []string) (<-chan model.StreamData, error) {
+	atomic.AddUint64(&s.lastID, 1)
+
 	msg := subscribeMessage{
 		Method: Subscribe,
 		Params: params,
-		ID:     s.nextID,
+		ID:     s.lastID,
 	}
 
 	reads := make(chan model.StreamData, 5)
@@ -79,8 +109,6 @@ func (s *stream) subscribe(params []string) (<-chan model.StreamData, error) {
 		return nil, err
 	}
 	s.writes <- b
-
-	atomic.AddUint64(&s.nextID, 1)
 
 	return reads, nil
 }
