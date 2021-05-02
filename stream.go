@@ -21,8 +21,7 @@ type SubscribeType string
 const (
 	BaseStreamURI = "wss://stream.binance.com:9443"
 
-	pongWait   = 5 * time.Minute
-	pingPeriod = 5 * time.Minute
+	pongPeriod = 2 * time.Minute
 
 	Subscribe   SubscribeType = "SUBSCRIBE"
 	Unsubscribe SubscribeType = "UNSUBSCRIBE"
@@ -38,6 +37,7 @@ type StreamerConfig struct {
 type Streamer interface {
 	AccountData(ctx context.Context) (<-chan model.StreamData, error)
 	KlineData(ctx context.Context, symbols []string, interval string) (<-chan model.KlineData, error)
+	AllTicker(ctx context.Context) (chan []model.Ticker, error)
 }
 
 type streamer struct {
@@ -149,11 +149,7 @@ func (s *stream) readPump(logger log.Logger) {
 }
 
 func (s *stream) writePump(ctx context.Context, logger log.Logger) {
-	_ = s.conn.SetReadDeadline(time.Now().Add(pongWait))
-	s.conn.SetPongHandler(func(string) error {
-		return s.conn.SetReadDeadline(time.Now().Add(pongWait))
-	})
-	t := time.NewTicker(pingPeriod)
+	t := time.NewTicker(pongPeriod)
 	defer t.Stop()
 
 	for {
@@ -167,7 +163,7 @@ func (s *stream) writePump(ctx context.Context, logger log.Logger) {
 			_ = logger.Log("writePump", "close signal")
 			return
 		case <-t.C:
-			if err := s.conn.WriteMessage(websocket.PingMessage, []byte{}); err != nil {
+			if err := s.conn.WriteMessage(websocket.PongMessage, []byte{}); err != nil {
 				return
 			}
 		}
