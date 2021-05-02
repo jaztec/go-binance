@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"sync/atomic"
 	"time"
 
@@ -48,7 +49,7 @@ type streamer struct {
 type subscribeMessage struct {
 	Method SubscribeType `json:"method"`
 	Params []string      `json:"params"`
-	ID     uint64        `json:"lastID"`
+	ID     uint64        `json:"id"`
 }
 
 type stream struct {
@@ -57,6 +58,8 @@ type stream struct {
 	writes        chan []byte
 	lastID        uint64
 	subscribers   subscriberMap
+	logger        log.Logger
+	open          bool
 }
 
 func (s *stream) unsubscribe(params []string) error {
@@ -89,6 +92,7 @@ func (s *stream) unsubscribe(params []string) error {
 
 func (s *stream) subscribe(params []string) (<-chan model.StreamData, error) {
 	atomic.AddUint64(&s.lastID, 1)
+	_ = s.logger.Log("subscribe", strings.Join(params, ", "))
 
 	msg := subscribeMessage{
 		Method: Subscribe,
@@ -123,6 +127,8 @@ func (s *stream) readPump(logger log.Logger) {
 	for {
 		_, msg, err := s.conn.ReadMessage()
 		if err != nil {
+			_ = s.logger.Log("method", "readPump", "error", err.Error())
+			s.open = false
 			return
 		}
 
@@ -154,7 +160,7 @@ func (s *stream) writePump(ctx context.Context, logger log.Logger) {
 		select {
 		case msg := <-s.writes:
 			if err := s.conn.WriteMessage(websocket.TextMessage, msg); err != nil {
-				_ = logger.Log("write", "writePump", "error", err)
+				_ = logger.Log("write", string(msg), "error", err)
 				return
 			}
 		case _ = <-ctx.Done():
@@ -203,6 +209,8 @@ func (s *streamer) stream(ctx context.Context) (*stream, error) {
 		subscriptions: 0,
 		writes:        make(chan []byte, 5),
 		subscribers:   make(subscriberMap),
+		logger:        s.logger,
+		open:          true,
 	}
 	s.streams = append(s.streams, st)
 
