@@ -11,6 +11,8 @@ import (
 	"net/url"
 	"strings"
 
+	"gitlab.jaztec.info/checkers/checkers/services/binance/model"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"gitlab.jaztec.info/checkers/checkers/services/binance"
@@ -32,6 +34,7 @@ func (h testHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer GinkgoRecover()
 	if h.status != http.StatusOK {
 		w.WriteHeader(h.status)
+		_, _ = w.Write(h.response)
 		return
 	}
 	Expect(r.URL.Path).To(Equal(h.expectedPath))
@@ -108,28 +111,50 @@ var _ = Describe("Api", func() {
 			return a
 		}
 
-		It("should call account data", func() {
-			v := url.Values{}
-			v.Set("timestamp", "0001")
-			v.Set("signature", generateSignature(apiSecret, "/api/v3/account?timestamp=0001"))
-			res := loadFixture("account_data")
-			ts := testServer("/api/v3/account", map[string]struct{}{
-				"timestamp": {},
-				"signature": {},
-			}, http.StatusOK, res)
-			defer ts.Close()
+		Context("should call account data", func() {
+			It("should work on success", func() {
+				v := url.Values{}
+				v.Set("timestamp", "0001")
+				v.Set("signature", generateSignature(apiSecret, "/api/v3/account?timestamp=0001"))
+				res := loadFixture("account_data")
+				ts := testServer("/api/v3/account", map[string]struct{}{
+					"timestamp": {},
+					"signature": {},
+				}, http.StatusOK, res)
+				defer ts.Close()
 
-			a := newAPI(ts.Client(), ts.URL)
+				a := newAPI(ts.Client(), ts.URL)
 
-			ai, err := a.UserAccount()
-			Expect(err).To(BeNil(), "calling UserAccount should not return error")
+				ai, err := a.UserAccount()
+				Expect(err).To(BeNil(), "calling UserAccount should not return error")
 
-			Expect(ai.MakerCommission).To(Equal(10))
-			Expect(ai.UpdateTime).To(Equal(1619000000000))
-			Expect(ai.Balances).To(HaveLen(1))
-			Expect(ai.Balances[0].Asset).To(Equal("BTC"))
-			Expect(ai.Balances[0].Free).To(Equal("10.00000000"))
-			Expect(ai.Balances[0].Locked).To(Equal("5.00000000"))
+				Expect(ai.MakerCommission).To(Equal(10))
+				Expect(ai.UpdateTime).To(Equal(1619000000000))
+				Expect(ai.Balances).To(HaveLen(1))
+				Expect(ai.Balances[0].Asset).To(Equal("BTC"))
+				Expect(ai.Balances[0].Free).To(Equal("10.00000000"))
+				Expect(ai.Balances[0].Locked).To(Equal("5.00000000"))
+			})
+
+			It("should work on error", func() {
+				v := url.Values{}
+				v.Set("timestamp", "0001")
+				v.Set("signature", generateSignature(apiSecret, "/api/v3/account?timestamp=0001"))
+				ts := testServer("/api/v3/account", map[string]struct{}{
+					"timestamp": {},
+					"signature": {},
+				}, http.StatusInternalServerError, []byte("{}"))
+				defer ts.Close()
+
+				a := newAPI(ts.Client(), ts.URL)
+
+				_, err := a.UserAccount()
+				Expect(err).ToNot(BeNil())
+				Expect(err).To(Equal(model.Error{
+					Code: 0,
+					Msg:  "",
+				}))
+			})
 		})
 	})
 })
