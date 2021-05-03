@@ -3,8 +3,7 @@ package binance
 import (
 	"context"
 	"encoding/json"
-	"fmt"
-	"net/http"
+	"sort"
 	"strings"
 	"sync/atomic"
 	"time"
@@ -28,22 +27,23 @@ const (
 )
 
 type subscriberMap map[string][]chan model.StreamData
+type channelList []string
+
+func (cl channelList) Len() int           { return len(cl) }
+func (cl channelList) Swap(i, j int)      { cl[i], cl[j] = cl[j], cl[i] }
+func (cl channelList) Less(i, j int) bool { return cl[i] < cl[j] }
+func (cl channelList) IndexOf(s string) int {
+	for n, el := range cl {
+		if el == s {
+			return n
+		}
+	}
+	return -1
+}
 
 type StreamerConfig struct {
 	API           API
 	BaseStreamURI string
-}
-
-type Streamer interface {
-	AccountData(ctx context.Context) (<-chan model.StreamData, error)
-	KlineData(ctx context.Context, symbols []string, interval string) (<-chan model.KlineData, error)
-	AllTicker(ctx context.Context) (chan []model.Ticker, error)
-}
-
-type streamer struct {
-	api     *api
-	logger  log.Logger
-	streams []*stream
 }
 
 type subscribeMessage struct {
@@ -53,13 +53,38 @@ type subscribeMessage struct {
 }
 
 type stream struct {
-	conn          *websocket.Conn
-	subscriptions uint16
-	writes        chan []byte
-	lastID        uint64
-	subscribers   subscriberMap
-	logger        log.Logger
-	open          bool
+	conn        *websocket.Conn
+	channels    channelList
+	writes      chan []byte
+	lastID      uint64
+	subscribers subscriberMap
+	logger      log.Logger
+	closed      chan struct{}
+}
+
+// reset allows the user to provide a new connection to the
+// stream that will continue work where it stopped. The Binance
+// API does a standard disconnect after 24h.
+func (s *stream) reset(ctx context.Context, conn *websocket.Conn) error {
+	s.conn = conn
+	go s.readPump()
+	go s.writePump(ctx)
+
+	msg := subscribeMessage{
+		Method: Subscribe,
+		Params: s.channels,
+		ID:     s.lastID,
+	}
+
+	b, err := json.Marshal(msg)
+	if err != nil {
+		return err
+	}
+	s.writes <- b
+
+	s.closed = make(chan struct{})
+
+	return nil
 }
 
 func (s *stream) unsubscribe(params []string) error {
@@ -78,12 +103,15 @@ func (s *stream) unsubscribe(params []string) error {
 	s.writes <- b
 
 	for _, param := range params {
-		// TODO This should be composed better, only close actual channels that are requesting unsubscribe
 		if list, ok := s.subscribers[param]; ok {
 			for _, ch := range list {
 				close(ch)
 			}
 			delete(s.subscribers, param)
+		}
+		if n := s.channels.IndexOf(param); n > -1 {
+			// remove channel but keep order intact
+			s.channels = append(s.channels[:n], s.channels[n+1:]...)
 		}
 	}
 
@@ -94,47 +122,55 @@ func (s *stream) subscribe(params []string) (<-chan model.StreamData, error) {
 	atomic.AddUint64(&s.lastID, 1)
 	_ = s.logger.Log("subscribe", strings.Join(params, ", "))
 
-	msg := subscribeMessage{
-		Method: Subscribe,
-		Params: params,
-		ID:     s.lastID,
-	}
-
+	newParams := make([]string, 0, len(params))
 	reads := make(chan model.StreamData, 5)
 	for _, param := range params {
 		if _, ok := s.subscribers[param]; !ok {
 			s.subscribers[param] = make([]chan model.StreamData, 0, 1)
+			newParams = append(newParams, param)
 		}
 		s.subscribers[param] = append(s.subscribers[param], reads)
 	}
 
-	b, err := json.Marshal(msg)
-	if err != nil {
-		return nil, err
+	// keep track of channels we connect on
+	s.channels = append(s.channels, params...)
+	sort.Sort(s.channels)
+
+	if len(newParams) > 0 {
+		msg := subscribeMessage{
+			Method: Subscribe,
+			Params: newParams,
+			ID:     s.lastID,
+		}
+
+		b, err := json.Marshal(msg)
+		if err != nil {
+			return nil, err
+		}
+		s.writes <- b
 	}
-	s.writes <- b
 
 	return reads, nil
 }
 
-func (s *stream) readPump(logger log.Logger) {
+func (s *stream) readPump() {
 	defer func() {
 		err := s.conn.Close()
 		if err != nil {
-			_ = logger.Log("close", "readPump", "error", err)
+			_ = s.logger.Log("close", "readPump", "error", err)
 		}
 	}()
 	for {
 		_, msg, err := s.conn.ReadMessage()
 		if err != nil {
 			_ = s.logger.Log("method", "readPump", "error", err.Error())
-			s.open = false
+			close(s.closed)
 			return
 		}
 
 		var sd model.StreamData
 		if err = json.Unmarshal(msg, &sd); err != nil {
-			_ = logger.Log("read", "error", "msg", err.Error())
+			_ = s.logger.Log("read", "error", "msg", err.Error())
 			continue
 		}
 
@@ -148,7 +184,7 @@ func (s *stream) readPump(logger log.Logger) {
 	}
 }
 
-func (s *stream) writePump(ctx context.Context, logger log.Logger) {
+func (s *stream) writePump(ctx context.Context) {
 	t := time.NewTicker(pongPeriod)
 	defer t.Stop()
 
@@ -156,69 +192,16 @@ func (s *stream) writePump(ctx context.Context, logger log.Logger) {
 		select {
 		case msg := <-s.writes:
 			if err := s.conn.WriteMessage(websocket.TextMessage, msg); err != nil {
-				_ = logger.Log("write", string(msg), "error", err)
+				_ = s.logger.Log("write", string(msg), "error", err)
 				return
 			}
 		case _ = <-ctx.Done():
-			_ = logger.Log("writePump", "close signal")
+			_ = s.logger.Log("writePump", "close signal")
 			return
 		case <-t.C:
 			if err := s.conn.WriteMessage(websocket.PongMessage, []byte{}); err != nil {
 				return
 			}
 		}
-	}
-}
-
-func (s *streamer) keepAlive(ctx context.Context, path string, interval time.Duration) {
-	uri := fmt.Sprintf("%s/%s", s.api.cfg.BaseStreamURI, path)
-	go func(ctx context.Context, uri string, interval time.Duration) {
-		tC := time.Tick(interval)
-		for {
-			select {
-			case <-tC:
-				_, _ = s.api.doRequest(http.MethodPut, uri, nil)
-			case <-ctx.Done():
-				return
-			}
-
-		}
-	}(ctx, uri, interval)
-}
-
-func (s *streamer) stream(ctx context.Context) (*stream, error) {
-	if len(s.streams) > 0 {
-		c := s.streams[0]
-		return c, nil
-	}
-
-	fullURI := fmt.Sprintf("%s/stream", s.api.cfg.BaseStreamURI)
-	d := &websocket.Dialer{}
-	_ = s.logger.Log("msg", "starting stream", "uri", fullURI)
-	conn, _, err := d.Dial(fullURI, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	st := &stream{
-		conn:          conn,
-		subscriptions: 0,
-		writes:        make(chan []byte, 5),
-		subscribers:   make(subscriberMap),
-		logger:        s.logger,
-		open:          true,
-	}
-	s.streams = append(s.streams, st)
-
-	go st.readPump(s.logger)
-	go st.writePump(ctx, s.logger)
-
-	return st, nil
-}
-
-func newStreamer(a *api, logger log.Logger) Streamer {
-	return &streamer{
-		api:    a,
-		logger: logger,
 	}
 }

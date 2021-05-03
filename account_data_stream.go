@@ -3,6 +3,7 @@ package binance
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -33,8 +34,9 @@ func (s *streamer) AccountData(ctx context.Context) (<-chan model.StreamData, er
 	}
 
 	p := Parameters{}
-	p.Set("streams", key.ListenKey)
-	s.keepAlive(ctx, p.Encode(), time.Minute*30)
+	p.Set("listenKey", key.ListenKey)
+	path := fmt.Sprintf("%s?%s", userDataStreamPath, p.Encode())
+	s.keepAlive(ctx, path, time.Minute*30)
 
 	return reads, nil
 }
