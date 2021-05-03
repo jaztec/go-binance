@@ -17,23 +17,27 @@ var _ = Describe("Parameters", func() {
 		p.Set("aap", "noot")
 	})
 
-	It("should encode in order of adding", func() {
-		Expect(p.Encode()).To(Equal("mies=merel&aap=noot"))
-	})
-
-	It("should override a set parameter", func() {
-		p.Set("mies", "boom")
-		Expect(p.Encode()).To(Equal("mies=boom&aap=noot"))
-	})
-
-	Measure("it should complete quickly", func(b Benchmarker) {
-		runtime := b.Time("runtime", func() {
+	Context("should function as required", func() {
+		It("should encode in order of adding", func() {
 			Expect(p.Encode()).To(Equal("mies=merel&aap=noot"))
 		})
 
-		Ω(runtime.Microseconds()).Should(BeNumerically("<", 100), "Encode() shouldn't take too long.")
-		b.RecordValue("microseconds run", float64(runtime.Microseconds()))
-	}, 10)
+		It("should override a set parameter", func() {
+			p.Set("mies", "boom")
+			Expect(p.Encode()).To(Equal("mies=boom&aap=noot"))
+		})
+	})
+
+	Context("have some limits on running time", func() {
+		Measure("it should complete quickly", func(b Benchmarker) {
+			runtime := b.Time("runtime", func() {
+				Expect(p.Encode()).To(Equal("mies=merel&aap=noot"))
+			})
+
+			Ω(runtime.Microseconds()).Should(BeNumerically("<", 100), "Encode() shouldn't take too long.")
+			b.RecordValue("microseconds run", float64(runtime.Microseconds()))
+		}, 10)
+	})
 })
 
 func BenchmarkNewParameters(b *testing.B) {
