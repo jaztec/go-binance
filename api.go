@@ -57,7 +57,6 @@ type APIConfig struct {
 	Secret        string
 	BaseURI       string
 	BaseStreamURI string
-	Client        *http.Client
 }
 
 type API interface {
@@ -82,7 +81,7 @@ func (a *api) Streamer() Streamer {
 
 func NewAPI(cfg APIConfig, logger Logger) (API, error) {
 	if logger == nil {
-		return nil, errors.New("expect an instantiated logger")
+		return nil, errors.New("api expects an instantiated logger")
 	}
 	a := &api{
 		cfg: cfg,
@@ -91,10 +90,6 @@ func NewAPI(cfg APIConfig, logger Logger) (API, error) {
 			weight:  0,
 		},
 		logger: logger,
-	}
-
-	if a.cfg.Client == nil {
-		a.cfg.Client = a.client()
 	}
 
 	a.streamer = newStreamer(a, logger)

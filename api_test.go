@@ -1,9 +1,6 @@
 package binance_test
 
 import (
-	"crypto/hmac"
-	"crypto/sha256"
-	"encoding/hex"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -23,42 +20,21 @@ const (
 	apiSecret = "noot"
 )
 
-type testHandler struct {
-	expectedPath       string
-	expectedQueryParts map[string]struct{}
-	status             int
-	response           []byte
-}
-
-func (h testHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	defer GinkgoRecover()
-	if h.status != http.StatusOK {
-		w.WriteHeader(h.status)
-		_, _ = w.Write(h.response)
-		return
-	}
-	Expect(r.URL.Path).To(Equal(h.expectedPath))
-	for k, _ := range r.URL.Query() {
-		_, ok := h.expectedQueryParts[k]
-		Expect(ok).To(Equal(true))
-	}
-	_, _ = w.Write(h.response)
-}
-
-func testServer(expectedPath string, expectedQueryParts map[string]struct{}, status int, res []byte) *httptest.Server {
-	return httptest.NewServer(testHandler{
-		expectedPath:       expectedPath,
-		expectedQueryParts: expectedQueryParts,
-		status:             status,
-		response:           res,
-	})
-}
-
-func generateSignature(secret, path string) string {
-	h := hmac.New(sha256.New, []byte(secret))
-	h.Write([]byte(path))
-
-	return hex.EncodeToString(h.Sum(nil))
+func testServer(expectedPath string, expectedQueryParts map[string]struct{}, status int, response []byte) *httptest.Server {
+	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer GinkgoRecover()
+		if status != http.StatusOK {
+			w.WriteHeader(status)
+			_, _ = w.Write(response)
+			return
+		}
+		Expect(r.URL.Path).To(Equal(expectedPath))
+		for k, _ := range r.URL.Query() {
+			_, ok := expectedQueryParts[k]
+			Expect(ok).To(Equal(true))
+		}
+		_, _ = w.Write(response)
+	}))
 }
 
 func loadFixture(name string) []byte {
@@ -100,13 +76,12 @@ var _ = Describe("Api", func() {
 	})
 
 	Context("call API endpoints", func() {
-		newAPI := func(client *http.Client, uri string) binance.API {
+		newAPI := func(uri string) binance.API {
 			a, _ := binance.NewAPI(binance.APIConfig{
 				Key:           apiKey,
 				Secret:        apiSecret,
 				BaseURI:       uri,
 				BaseStreamURI: strings.ReplaceAll(uri, "ws", "http"),
-				Client:        client,
 			}, testLogger{})
 			return a
 		}
@@ -115,7 +90,7 @@ var _ = Describe("Api", func() {
 			It("should work on success", func() {
 				v := url.Values{}
 				v.Set("timestamp", "0001")
-				v.Set("signature", generateSignature(apiSecret, "/api/v3/account?timestamp=0001"))
+				v.Set("signature", "aSignature")
 				res := loadFixture("account_data")
 				ts := testServer("/api/v3/account", map[string]struct{}{
 					"timestamp": {},
@@ -123,7 +98,7 @@ var _ = Describe("Api", func() {
 				}, http.StatusOK, res)
 				defer ts.Close()
 
-				a := newAPI(ts.Client(), ts.URL)
+				a := newAPI(ts.URL)
 
 				ai, err := a.UserAccount()
 				Expect(err).To(BeNil(), "calling UserAccount should not return error")
@@ -139,14 +114,14 @@ var _ = Describe("Api", func() {
 			It("should work on error", func() {
 				v := url.Values{}
 				v.Set("timestamp", "0001")
-				v.Set("signature", generateSignature(apiSecret, "/api/v3/account?timestamp=0001"))
+				v.Set("signature", "aSignature")
 				ts := testServer("/api/v3/account", map[string]struct{}{
 					"timestamp": {},
 					"signature": {},
 				}, http.StatusInternalServerError, []byte("{}"))
 				defer ts.Close()
 
-				a := newAPI(ts.Client(), ts.URL)
+				a := newAPI(ts.URL)
 
 				_, err := a.UserAccount()
 				Expect(err).ToNot(BeNil())

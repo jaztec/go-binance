@@ -44,7 +44,9 @@ type StreamerConfig struct {
 	BaseStreamURI string
 }
 
-type subscribeMessage struct {
+// SubscribeMessage is a representation of the Binance subscribe and unsubscribe
+// messages data structure.
+type SubscribeMessage struct {
 	Method SubscribeType `json:"method"`
 	Params []string      `json:"params"`
 	ID     uint64        `json:"id"`
@@ -68,7 +70,7 @@ func (s *stream) reset(ctx context.Context, conn *websocket.Conn) error {
 	go s.readPump()
 	go s.writePump(ctx)
 
-	msg := subscribeMessage{
+	msg := SubscribeMessage{
 		Method: Subscribe,
 		Params: s.channels,
 		ID:     s.lastID,
@@ -88,7 +90,7 @@ func (s *stream) reset(ctx context.Context, conn *websocket.Conn) error {
 func (s *stream) unsubscribe(params []string) error {
 	atomic.AddUint64(&s.lastID, 1)
 
-	msg := subscribeMessage{
+	msg := SubscribeMessage{
 		Method: Unsubscribe,
 		Params: params,
 		ID:     s.lastID,
@@ -135,7 +137,7 @@ func (s *stream) subscribe(params []string) (<-chan model.StreamData, error) {
 	sort.Sort(s.channels)
 
 	if len(newParams) > 0 {
-		msg := subscribeMessage{
+		msg := SubscribeMessage{
 			Method: Subscribe,
 			Params: newParams,
 			ID:     s.lastID,
