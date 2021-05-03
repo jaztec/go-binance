@@ -195,6 +195,9 @@ func (s *stream) writePump(ctx context.Context) {
 				_ = s.logger.Log("write", string(msg), "error", err)
 				return
 			}
+		case <-s.closed:
+			// when top stream closes we exit too, reset will start new procedures
+			return
 		case _ = <-ctx.Done():
 			_ = s.logger.Log("writePump", "close signal")
 			return
