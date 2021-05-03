@@ -3,10 +3,11 @@ package binance
 import (
 	"encoding/json"
 	"fmt"
-	"gitlab.jaztec.info/checkers/checkers/services/binance/model"
 	"net/http"
 	"strconv"
 	"time"
+
+	"gitlab.jaztec.info/checkers/checkers/services/binance/model"
 )
 
 const (
@@ -22,7 +23,7 @@ func (a *api) UserOrderBook(symbol string, startTime, endTime int64, limit int) 
 	if symbol == "" {
 		return uo, NoSymbolProvided
 	}
-	q := Parameters{}
+	q := NewParameters(5)
 	q.Set("symbol", symbol)
 	if startTime != 0 {
 		q.Set("startTime", strconv.FormatInt(startTime, 10))
@@ -52,7 +53,7 @@ func (a *api) OrderBook(symbol string, limit int) (o model.Order, err error) {
 	if symbol == "" {
 		return o, NoSymbolProvided
 	}
-	q := Parameters{}
+	q := NewParameters(2)
 	q.Set("symbol", symbol)
 	if limit != 0 {
 		q.Set("limit", strconv.Itoa(limit))

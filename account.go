@@ -3,10 +3,11 @@ package binance
 import (
 	"encoding/json"
 	"fmt"
-	"gitlab.jaztec.info/checkers/checkers/services/binance/model"
 	"net/http"
 	"strconv"
 	"time"
+
+	"gitlab.jaztec.info/checkers/checkers/services/binance/model"
 )
 
 const accountPath = "/api/v3/account"
@@ -16,7 +17,7 @@ func init() {
 }
 
 func (a *api) UserAccount() (ai model.AccountInfo, err error) {
-	q := Parameters{}
+	q := NewParameters(1)
 	q.Set("timestamp", strconv.FormatInt(time.Now().Unix()*1000, 10))
 
 	body, err := a.doRequest(http.MethodGet, accountPath, q)

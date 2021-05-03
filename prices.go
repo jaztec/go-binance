@@ -2,8 +2,9 @@ package binance
 
 import (
 	"encoding/json"
-	model2 "gitlab.jaztec.info/checkers/checkers/services/binance/model"
 	"net/http"
+
+	model2 "gitlab.jaztec.info/checkers/checkers/services/binance/model"
 )
 
 const pricesPath = "/api/v3/ticker/price"
@@ -11,7 +12,7 @@ const pricesPath = "/api/v3/ticker/price"
 func (a *api) Prices(symbol string) ([]model2.Price, error) {
 	var q Parameters
 	if symbol != "" {
-		q = Parameters{}
+		q = NewParameters(1)
 		q.Set("symbol", symbol)
 	}
 

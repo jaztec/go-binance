@@ -6,26 +6,23 @@ import (
 )
 
 // Parameters is required only to skip the regular key sorting of the url.Values type
-type Parameters map[string][]string
+type Parameters interface {
+	Encode() string
+	Set(string, ...string)
+}
+
+type parameters struct {
+	keys   []string
+	values [][]string
+}
 
 // Encode encodes the values into ``URL encoded'' form
 // ("bar=baz&foo=quux") sorted by key.
-func (v Parameters) Encode() string {
-	if v == nil {
-		return ""
-	}
-	// reverse the map
-	rev := make(Parameters, len(v))
-	for k, val := range v {
-		rev[k] = val
-	}
+func (p *parameters) Encode() string {
 	var buf strings.Builder
-	keys := make([]string, 0, len(rev))
-	for k := range rev {
-		keys = append(keys, k)
-	}
-	for _, k := range keys {
-		vs := v[k]
+	// encode in reversed order
+	for i, k := range p.keys {
+		vs := p.values[i]
 		keyEscaped := url.QueryEscape(k)
 		for _, v := range vs {
 			if buf.Len() > 0 {
@@ -41,6 +38,27 @@ func (v Parameters) Encode() string {
 
 // Set sets the key to value. It replaces any existing
 // values.
-func (v Parameters) Set(key, value string) {
-	v[key] = []string{value}
+func (p *parameters) Set(key string, value ...string) {
+	if n := pos(p.keys, key); n > -1 {
+		p.values[n] = value
+	} else {
+		p.keys = append(p.keys, key)
+		p.values = append(p.values, value)
+	}
+}
+
+func NewParameters(initialLength int) Parameters {
+	return &parameters{
+		keys:   make([]string, 0, initialLength),
+		values: make([][]string, 0, initialLength),
+	}
+}
+
+func pos(list []string, s string) int {
+	for i, k := range list {
+		if k == s {
+			return i
+		}
+	}
+	return -1
 }
