@@ -29,7 +29,7 @@ var _ = Describe("Parameters", func() {
 			Expect(p.Encode()).To(Equal("mies=merel&aap=noot"))
 		})
 
-		Ω(runtime.Microseconds()).Should(BeNumerically("<", 5), "Encode() shouldn't take too long.")
+		Ω(runtime.Microseconds()).Should(BeNumerically("<", 20), "Encode() shouldn't take too long.")
 		b.RecordValue("microseconds run", float64(runtime.Microseconds()))
 	}, 10)
 })
