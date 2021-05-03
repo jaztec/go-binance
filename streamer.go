@@ -19,7 +19,7 @@ type Streamer interface {
 
 type streamer struct {
 	api     *api
-	logger  log.Logger
+	logger  Logger
 	streams []*stream
 }
 

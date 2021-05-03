@@ -10,8 +10,6 @@ import (
 
 	"gitlab.jaztec.info/checkers/checkers/services/binance/model"
 
-	"github.com/go-kit/kit/log"
-
 	"github.com/gorilla/websocket"
 )
 
@@ -58,7 +56,7 @@ type stream struct {
 	writes      chan []byte
 	lastID      uint64
 	subscribers subscriberMap
-	logger      log.Logger
+	logger      Logger
 	closed      chan struct{}
 }
 

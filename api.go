@@ -1,11 +1,11 @@
 package binance
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 	"time"
 
-	"github.com/go-kit/kit/log"
 	"gitlab.jaztec.info/checkers/checkers/services/binance/model"
 )
 
@@ -57,6 +57,7 @@ type APIConfig struct {
 	Secret        string
 	BaseURI       string
 	BaseStreamURI string
+	Client        *http.Client
 }
 
 type API interface {
@@ -71,7 +72,7 @@ type API interface {
 type api struct {
 	cfg      APIConfig
 	checker  weightChecker
-	logger   log.Logger
+	logger   Logger
 	streamer Streamer
 }
 
@@ -79,7 +80,10 @@ func (a *api) Streamer() Streamer {
 	return a.streamer
 }
 
-func NewAPI(cfg APIConfig, logger log.Logger) API {
+func NewAPI(cfg APIConfig, logger Logger) (API, error) {
+	if logger == nil {
+		return nil, errors.New("expect an instantiated logger")
+	}
 	a := &api{
 		cfg: cfg,
 		checker: weightChecker{
@@ -89,7 +93,11 @@ func NewAPI(cfg APIConfig, logger log.Logger) API {
 		logger: logger,
 	}
 
+	if a.cfg.Client == nil {
+		a.cfg.Client = a.client()
+	}
+
 	a.streamer = newStreamer(a, logger)
 
-	return a
+	return a, nil
 }
