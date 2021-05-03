@@ -72,7 +72,6 @@ type api struct {
 	cfg      APIConfig
 	checker  weightChecker
 	logger   log.Logger
-	streamID uint64
 	streamer Streamer
 }
 
