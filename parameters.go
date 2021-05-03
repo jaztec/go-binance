@@ -17,7 +17,7 @@ type parameters struct {
 }
 
 // Encode encodes the values into ``URL encoded'' form
-// ("bar=baz&foo=quux") sorted by key.
+// ("bar=baz&foo=quux") sorted by order of entry.
 func (p *parameters) Encode() string {
 	var buf strings.Builder
 	// encode in reversed order
