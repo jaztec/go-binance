@@ -92,6 +92,10 @@ func (a *api) doRequest(method, path string, q Parameters) ([]byte, error) {
 	}
 	defer res.Body.Close()
 
+	if err := a.checker.checkResponse(res); err != nil {
+		return nil, err
+	}
+
 	resBody, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		return nil, err
