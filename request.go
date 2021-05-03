@@ -86,7 +86,7 @@ func (a *api) doRequest(method, path string, q Parameters) ([]byte, error) {
 		return nil, err
 	}
 
-	res, err := a.client().Do(req)
+	res, err := a.cfg.Client.Do(req)
 	if err != nil {
 		return nil, err
 	}
