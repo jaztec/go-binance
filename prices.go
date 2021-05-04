@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"net/http"
 
-	model2 "gitlab.jaztec.info/checkers/checkers/services/binance/model"
+	"gitlab.jaztec.info/checkers/checkers/services/binance/model"
 )
 
 const pricesPath = "/api/v3/ticker/price"
 
-func (a *api) TickerPrice(symbol string) ([]model2.Price, error) {
+func (a *api) TickerPrice(symbol string) ([]model.Price, error) {
 	var q Parameters
 	if symbol != "" {
 		q = NewParameters(1)
@@ -21,14 +21,14 @@ func (a *api) TickerPrice(symbol string) ([]model2.Price, error) {
 		return nil, err
 	}
 
-	var list []model2.Price
+	var list []model.Price
 	if symbol != "" {
-		var p model2.Price
+		var p model.Price
 		err = json.Unmarshal(body, &p)
 		if err != nil {
 			return nil, err
 		}
-		list = []model2.Price{p}
+		list = []model.Price{p}
 	} else {
 		err = json.Unmarshal(body, &list)
 		if err != nil {
