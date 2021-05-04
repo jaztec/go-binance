@@ -10,13 +10,19 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"sync"
 
 	"gitlab.jaztec.info/checkers/checkers/services/binance/model"
 )
 
-var signatureRequired = make(map[string]struct{})
+var (
+	signatureRequired = make(map[string]struct{})
+	signatureMut      = sync.Mutex{}
+)
 
 func requireSignature(path string) {
+	signatureMut.Lock()
+	defer signatureMut.Unlock()
 	signatureRequired[path] = struct{}{}
 }
 
@@ -28,6 +34,8 @@ func generateSignature(secret, path string) string {
 }
 
 func requiresSignature(path string) bool {
+	signatureMut.Lock()
+	defer signatureMut.Unlock()
 	_, ok := signatureRequired[path]
 	return ok
 }
