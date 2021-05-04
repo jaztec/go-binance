@@ -125,15 +125,15 @@ type OrderParams struct {
 	RecvWindow       int64
 }
 
-func (a *api) Order(symbol string, side OrderSide, orderType OrderType, params OrderParams) (interface{}, error) {
+func (a *api) Order(symbol string, side OrderSide, orderType OrderType, params OrderParams) (model.OrderResponse, error) {
 	return a.doOrder(orderPath, symbol, side, orderType, params)
 }
 
-func (a *api) OrderTest(symbol string, side OrderSide, orderType OrderType, params OrderParams) (interface{}, error) {
+func (a *api) OrderTest(symbol string, side OrderSide, orderType OrderType, params OrderParams) (model.OrderResponse, error) {
 	return a.doOrder(orderTestPath, symbol, side, orderType, params)
 }
 
-func (a *api) doOrder(path string, symbol string, side OrderSide, orderType OrderType, params OrderParams) (interface{}, error) {
+func (a *api) doOrder(path string, symbol string, side OrderSide, orderType OrderType, params OrderParams) (model.OrderResponse, error) {
 	if err := checkOrderParams(orderType, params); err != nil {
 		return nil, err
 	}
@@ -152,13 +152,34 @@ func (a *api) doOrder(path string, symbol string, side OrderSide, orderType Orde
 		return nil, err
 	}
 
-	var i interface{}
-	err = json.Unmarshal(res, i)
+	if params.NewOrderRespType != "" {
+		i := orderResponse(params.NewOrderRespType)
+		err = json.Unmarshal(res, &i)
+		if err != nil {
+			return nil, err
+		}
+		return i, nil
+	}
+	i := model.OrderResponseAck{}
+
+	err = json.Unmarshal(res, &i)
 	if err != nil {
 		return nil, err
 	}
-
 	return i, nil
+}
+
+func orderResponse(t OrderResponseType) model.OrderResponse {
+	switch t {
+	case Ack:
+		return model.OrderResponseAck{}
+	case Result:
+		return model.OrderResponseResult{}
+	case Full:
+		return model.OrderResponseFull{}
+	default:
+		return model.OrderResponseAck{}
+	}
 }
 
 func addOrderParams(p Parameters, params OrderParams) {

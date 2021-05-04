@@ -65,8 +65,8 @@ type API interface {
 	AvgPrice(symbol string) (model.AvgPrice, error)
 	Depth(symbol string, limit int) (model.Order, error)
 	ExchangeInfo() (model.ExchangeInfo, error)
-	Order(symbol string, side OrderSide, orderType OrderType, params OrderParams) (interface{}, error)
-	OrderTest(symbol string, side OrderSide, orderType OrderType, params OrderParams) (interface{}, error)
+	Order(symbol string, side OrderSide, orderType OrderType, params OrderParams) (model.OrderResponse, error)
+	OrderTest(symbol string, side OrderSide, orderType OrderType, params OrderParams) (model.OrderResponse, error)
 	Ticker24h(symbol string) ([]model.TickerStatistics, error)
 	TickerPrice(symbol string) ([]model.Price, error)
 
