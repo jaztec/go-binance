@@ -67,7 +67,7 @@ func (s *testStreamServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 		if s.withStopper > 0 && s.withStopper == s.it {
 			stopTestServer = true
-			defer stopMux.Unlock()
+			stopMux.Unlock()
 			return
 		}
 		stopMux.Unlock()

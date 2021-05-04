@@ -20,3 +20,8 @@ type PriceCollection []Price
 func (pc PriceCollection) Len() int           { return len(pc) }
 func (pc PriceCollection) Swap(i, j int)      { pc[i], pc[j] = pc[j], pc[i] }
 func (pc PriceCollection) Less(i, j int) bool { return pc[i].Price() < pc[j].Price() }
+
+type AvgPrice struct {
+	Min   int    `json:"min"`
+	Price string `json:"price"`
+}
