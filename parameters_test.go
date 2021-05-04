@@ -29,7 +29,7 @@ var _ = Describe("Parameters", func() {
 	})
 
 	Context("have some limits on running time", func() {
-		Measure("it should complete quickly", func(b Benchmarker) {
+		Measure("it should complete and report some data on completing", func(b Benchmarker) {
 			runtime := b.Time("runtime", func() {
 				Expect(p.Encode()).To(Equal("mies=merel&aap=noot"))
 			})

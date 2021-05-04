@@ -1,10 +1,7 @@
 package binance_test
 
-import "fmt"
-
 type testLogger struct{}
 
-func (testLogger) Log(keyvals ...interface{}) error {
-	fmt.Println(keyvals...)
+func (testLogger) Log(_ ...interface{}) error {
 	return nil
 }

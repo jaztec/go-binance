@@ -80,8 +80,12 @@ func (s *streamer) conn() (*websocket.Conn, error) {
 
 func (s *streamer) monitor(ctx context.Context, st *stream) {
 	for {
+		ch := st.closed
 		select {
-		case <-st.closed:
+		case nch := <-st.newClosed:
+			fmt.Println("got new closed")
+			ch = nch
+		case <-ch:
 			conn, err := s.conn()
 			if err != nil {
 				_ = s.logger.Log("streamer", "monitor", "error creating new connection", err.Error())

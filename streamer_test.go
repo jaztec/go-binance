@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync"
 
 	"gitlab.jaztec.info/checkers/checkers/services/binance/model"
 
@@ -16,49 +17,78 @@ import (
 	"gitlab.jaztec.info/checkers/checkers/services/binance"
 )
 
-func testStreamServer() *httptest.Server {
+var (
+	stopTestServer = false
+	stopMux        = sync.Mutex{}
+)
+
+type testStreamServer struct {
+	it           uint32
+	wasStopped   bool
+	withStopper  uint32
+	afterStopped chan binance.SubscribeMessage
+}
+
+func (s *testStreamServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	defer GinkgoRecover()
 	accountFn := func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/api/v3/userDataStream" {
-			k := model.ListenKey{ListenKey: "allowed"} // anything works here
+			k := model.ListenKey{ListenKey: "userDataStreamAllowed"} // anything works here
 			b, _ := json.Marshal(k)
 			_, _ = w.Write(b)
 		}
 	}
 
-	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		defer GinkgoRecover()
+	if r.Header.Get("Connection") != "Upgrade" {
+		accountFn(w, r)
+		return
+	}
 
-		if r.Header.Get("Connection") != "Upgrade" {
-			accountFn(w, r)
+	var upgrader = websocket.Upgrader{}
+	c, err := upgrader.Upgrade(w, r, nil)
+	Expect(err).To(BeNil())
+	defer c.Close()
+
+	for {
+		mt, msg, err := c.ReadMessage()
+		Expect(err).To(BeNil())
+
+		if mt != websocket.TextMessage {
+			continue
+		}
+		var parsed binance.SubscribeMessage
+		err = json.Unmarshal(msg, &parsed)
+		Expect(err).To(BeNil())
+
+		s.it++
+		stopMux.Lock()
+		if stopTestServer {
+			s.afterStopped <- parsed
+		}
+		if s.withStopper > 0 && s.withStopper == s.it {
+			stopTestServer = true
+			defer stopMux.Unlock()
 			return
 		}
+		stopMux.Unlock()
+	}
+}
 
-		var upgrader = websocket.Upgrader{}
-		c, err := upgrader.Upgrade(w, r, nil)
-		Expect(err).To(BeNil())
-		defer c.Close()
-
-		for {
-			mt, msg, err := c.ReadMessage()
-			Expect(err).To(BeNil())
-
-			if mt != websocket.TextMessage {
-				continue
-			}
-			var parsed binance.SubscribeMessage
-			err = json.Unmarshal(msg, &parsed)
-			Expect(err).To(BeNil())
-		}
-	}))
+func startTestStreamServer(withStopper uint32, afterStopped chan binance.SubscribeMessage) *httptest.Server {
+	return httptest.NewServer(&testStreamServer{
+		it:           0,
+		wasStopped:   false,
+		withStopper:  withStopper,
+		afterStopped: afterStopped,
+	})
 }
 
 var _ = Describe("Streamer", func() {
 	Context("Create an API with a Streamer", func() {
 		Context("Should connect to stream and subscribe to channels", func() {
 			var a binance.API
-
-			BeforeEach(func() {
-				s := testStreamServer()
+			var start = func(withStopper uint32, afterStopped chan binance.SubscribeMessage) {
+				s := startTestStreamServer(withStopper, afterStopped)
 				var err error
 				a, err = binance.NewAPI(binance.APIConfig{
 					Key:           apiKey,
@@ -67,6 +97,10 @@ var _ = Describe("Streamer", func() {
 					BaseStreamURI: strings.ReplaceAll(s.URL, "http", "ws"),
 				}, testLogger{})
 				Expect(err).To(BeNil())
+			}
+
+			BeforeEach(func() {
+				start(0, nil)
 			})
 
 			It("should have created a streamer", func() {
@@ -92,6 +126,32 @@ var _ = Describe("Streamer", func() {
 				defer cancelFn()
 				_, err := a.Streamer().AllTicker(ctx)
 				Expect(err).To(BeNil())
+			})
+
+			It("should keep the stream alive", func() {
+				afterStopped := make(chan binance.SubscribeMessage)
+				start(3, afterStopped)
+
+				ctx, cancelFn := context.WithCancel(context.Background())
+				defer cancelFn()
+				var err error
+
+				_, err = a.Streamer().KlineData(ctx, []string{"BTCETH"}, "5m")
+				Expect(err).To(BeNil())
+				_, err = a.Streamer().AccountData(ctx)
+				Expect(err).To(BeNil())
+				_, err = a.Streamer().AllTicker(ctx)
+				Expect(err).To(BeNil())
+
+				Expect(<-afterStopped).To(Equal(binance.SubscribeMessage{
+					Method: binance.Subscribe,
+					Params: []string{
+						"!ticker@arr",
+						"BTCETH@kline_5m",
+						"userDataStreamAllowed",
+					},
+					ID: 3,
+				}))
 			})
 		})
 	})

@@ -60,12 +60,14 @@ type stream struct {
 	subscribers subscriberMap
 	logger      Logger
 	closed      chan struct{}
+	newClosed   chan chan struct{}
 }
 
 // reset allows the user to provide a new connection to the
 // stream that will continue work where it stopped. The Binance
 // API does a standard disconnect after 24h.
 func (s *stream) reset(ctx context.Context, conn *websocket.Conn) error {
+	_ = s.conn.Close()
 	s.conn = conn
 	go s.readPump()
 	go s.writePump(ctx)
@@ -82,7 +84,9 @@ func (s *stream) reset(ctx context.Context, conn *websocket.Conn) error {
 	}
 	s.writes <- b
 
-	s.closed = make(chan struct{})
+	newC := make(chan struct{})
+	s.newClosed <- newC
+	s.closed = newC
 
 	return nil
 }
