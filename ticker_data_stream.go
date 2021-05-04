@@ -7,7 +7,7 @@ import (
 	"gitlab.jaztec.info/checkers/checkers/services/binance/model"
 )
 
-func (s *streamer) AllTicker(ctx context.Context) (chan []model.Ticker, error) {
+func (s *streamer) TickerArr(ctx context.Context) (chan []model.Ticker, error) {
 	st, err := s.stream(ctx)
 	if err != nil {
 		return nil, err
@@ -26,7 +26,7 @@ func (s *streamer) AllTicker(ctx context.Context) (chan []model.Ticker, error) {
 			case msg := <-ch:
 				var t []model.Ticker
 				if err := json.Unmarshal(msg.Data, &t); err != nil {
-					_ = s.logger.Log("method", "AllTicker", "error", err.Error())
+					_ = s.logger.Log("method", "TickerArr", "error", err.Error())
 					continue
 				}
 

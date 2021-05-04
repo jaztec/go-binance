@@ -8,7 +8,7 @@ import (
 	"gitlab.jaztec.info/checkers/checkers/services/binance/model"
 )
 
-func (s *streamer) KlineData(ctx context.Context, symbols []string, interval string) (<-chan model.KlineData, error) {
+func (s *streamer) Kline(ctx context.Context, symbols []string, interval string) (<-chan model.KlineData, error) {
 	params := make([]string, 0, len(symbols))
 	for _, s := range symbols {
 		params = append(params, fmt.Sprintf("%s@kline_%s", s, interval))

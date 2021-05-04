@@ -60,10 +60,10 @@ type APIConfig struct {
 }
 
 type API interface {
-	Prices(symbol string) ([]model.Price, error)
-	OrderBook(symbol string, limit int) (model.Order, error)
-	UserOrderBook(symbol string, startTime, endTime int64, limit int) ([]model.UserOrder, error)
-	UserAccount() (ai model.AccountInfo, err error)
+	TickerPrice(symbol string) ([]model.Price, error)
+	Depth(symbol string, limit int) (model.Order, error)
+	AllOrders(symbol string, startTime, endTime int64, limit int) ([]model.UserOrder, error)
+	Account() (ai model.AccountInfo, err error)
 
 	Streamer() Streamer
 }

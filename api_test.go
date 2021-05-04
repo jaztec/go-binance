@@ -100,8 +100,8 @@ var _ = Describe("Api", func() {
 
 				a := newAPI(ts.URL)
 
-				ai, err := a.UserAccount()
-				Expect(err).To(BeNil(), "calling UserAccount should not return error")
+				ai, err := a.Account()
+				Expect(err).To(BeNil(), "calling Account should not return error")
 
 				Expect(ai.MakerCommission).To(Equal(10))
 				Expect(ai.UpdateTime).To(Equal(1619000000000))
@@ -123,7 +123,7 @@ var _ = Describe("Api", func() {
 
 				a := newAPI(ts.URL)
 
-				_, err := a.UserAccount()
+				_, err := a.Account()
 				Expect(err).ToNot(BeNil())
 				Expect(err).To(Equal(model.Error{
 					Code: 0,

@@ -9,7 +9,7 @@ import (
 
 const pricesPath = "/api/v3/ticker/price"
 
-func (a *api) Prices(symbol string) ([]model2.Price, error) {
+func (a *api) TickerPrice(symbol string) ([]model2.Price, error) {
 	var q Parameters
 	if symbol != "" {
 		q = NewParameters(1)

@@ -107,24 +107,24 @@ var _ = Describe("Streamer", func() {
 				Expect(a.Streamer()).ToNot(BeNil())
 			})
 
-			It("should call KlineData function", func() {
+			It("should call Kline function", func() {
 				ctx, cancelFn := context.WithCancel(context.Background())
 				defer cancelFn()
-				_, err := a.Streamer().KlineData(ctx, []string{"BTCETH"}, "5m")
+				_, err := a.Streamer().Kline(ctx, []string{"BTCETH"}, "5m")
 				Expect(err).To(BeNil())
 			})
 
-			It("should call AccountData function", func() {
+			It("should call UserDataStream function", func() {
 				ctx, cancelFn := context.WithCancel(context.Background())
 				defer cancelFn()
-				_, err := a.Streamer().AccountData(ctx)
+				_, err := a.Streamer().UserDataStream(ctx)
 				Expect(err).To(BeNil())
 			})
 
-			It("should call AllTicker function", func() {
+			It("should call TickerArr function", func() {
 				ctx, cancelFn := context.WithCancel(context.Background())
 				defer cancelFn()
-				_, err := a.Streamer().AllTicker(ctx)
+				_, err := a.Streamer().TickerArr(ctx)
 				Expect(err).To(BeNil())
 			})
 
@@ -136,11 +136,11 @@ var _ = Describe("Streamer", func() {
 				defer cancelFn()
 				var err error
 
-				_, err = a.Streamer().KlineData(ctx, []string{"BTCETH"}, "5m")
+				_, err = a.Streamer().Kline(ctx, []string{"BTCETH"}, "5m")
 				Expect(err).To(BeNil())
-				_, err = a.Streamer().AccountData(ctx)
+				_, err = a.Streamer().UserDataStream(ctx)
 				Expect(err).To(BeNil())
-				_, err = a.Streamer().AllTicker(ctx)
+				_, err = a.Streamer().TickerArr(ctx)
 				Expect(err).To(BeNil())
 
 				//TODO This tests actually works sometimes but other times it blocks

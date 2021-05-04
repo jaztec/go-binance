@@ -12,9 +12,9 @@ import (
 )
 
 type Streamer interface {
-	AccountData(ctx context.Context) (<-chan model.StreamData, error)
-	KlineData(ctx context.Context, symbols []string, interval string) (<-chan model.KlineData, error)
-	AllTicker(ctx context.Context) (chan []model.Ticker, error)
+	UserDataStream(ctx context.Context) (<-chan model.StreamData, error)
+	Kline(ctx context.Context, symbols []string, interval string) (<-chan model.KlineData, error)
+	TickerArr(ctx context.Context) (chan []model.Ticker, error)
 }
 
 type streamer struct {

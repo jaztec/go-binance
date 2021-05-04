@@ -16,7 +16,7 @@ func init() {
 	requireSignature(accountPath)
 }
 
-func (a *api) UserAccount() (ai model.AccountInfo, err error) {
+func (a *api) Account() (ai model.AccountInfo, err error) {
 	q := NewParameters(1)
 	q.Set("timestamp", strconv.FormatInt(time.Now().Unix()*1000, 10))
 

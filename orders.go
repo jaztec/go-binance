@@ -19,7 +19,7 @@ func init() {
 	requireSignature(userOrderBookPath)
 }
 
-func (a *api) UserOrderBook(symbol string, startTime, endTime int64, limit int) (uo []model.UserOrder, err error) {
+func (a *api) AllOrders(symbol string, startTime, endTime int64, limit int) (uo []model.UserOrder, err error) {
 	if symbol == "" {
 		return uo, NoSymbolProvided
 	}
@@ -49,7 +49,7 @@ func (a *api) UserOrderBook(symbol string, startTime, endTime int64, limit int) 
 	return uo, nil
 }
 
-func (a *api) OrderBook(symbol string, limit int) (o model.Order, err error) {
+func (a *api) Depth(symbol string, limit int) (o model.Order, err error) {
 	if symbol == "" {
 		return o, NoSymbolProvided
 	}

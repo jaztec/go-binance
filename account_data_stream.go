@@ -12,7 +12,7 @@ import (
 
 const userDataStreamPath = "/api/v3/userDataStream"
 
-func (s *streamer) AccountData(ctx context.Context) (<-chan model.StreamData, error) {
+func (s *streamer) UserDataStream(ctx context.Context) (<-chan model.StreamData, error) {
 	res, err := s.api.doRequest(http.MethodPost, userDataStreamPath, nil)
 	if err != nil {
 		return nil, err
