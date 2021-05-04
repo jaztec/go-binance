@@ -24,5 +24,5 @@ func (a *api) AvgPrice(symbol string) (ap model.AvgPrice, err error) {
 		return ap, fmt.Errorf("encountered error while unmarshaling '%s' into model.AvgPrice", body)
 	}
 
-	return ap, nil
+	return
 }
