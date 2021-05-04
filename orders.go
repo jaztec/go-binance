@@ -154,11 +154,11 @@ func (a *api) doOrder(path string, symbol string, side OrderSide, orderType Orde
 
 	if params.NewOrderRespType != "" {
 		i := orderResponse(params.NewOrderRespType)
-		err = json.Unmarshal(res, &i)
+		err = json.Unmarshal(res, i)
 		if err != nil {
 			return nil, err
 		}
-		return i, nil
+		return i.(model.OrderResponse), nil
 	}
 	i := model.OrderResponseAck{}
 
@@ -169,16 +169,16 @@ func (a *api) doOrder(path string, symbol string, side OrderSide, orderType Orde
 	return i, nil
 }
 
-func orderResponse(t OrderResponseType) model.OrderResponse {
+func orderResponse(t OrderResponseType) interface{} {
 	switch t {
 	case Ack:
-		return model.OrderResponseAck{}
+		return &model.OrderResponseAck{}
 	case Result:
-		return model.OrderResponseResult{}
+		return &model.OrderResponseResult{}
 	case Full:
-		return model.OrderResponseFull{}
+		return &model.OrderResponseFull{}
 	default:
-		return model.OrderResponseAck{}
+		return &model.OrderResponseAck{}
 	}
 }
 
