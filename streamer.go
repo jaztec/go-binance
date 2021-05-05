@@ -2,10 +2,12 @@ package binance
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
 
+	"github.com/dchest/uniuri"
 	"github.com/go-kit/kit/log"
 	"github.com/gorilla/websocket"
 	"gitlab.jaztec.info/checkers/checkers/services/binance/model"
@@ -39,10 +41,13 @@ func (s *streamer) keepAlive(ctx context.Context, path string, interval time.Dur
 }
 
 func (s *streamer) stream(ctx context.Context) (*stream, error) {
+	_ = s.logger.Log("stream", "request", "current", len(s.streams))
 	if len(s.streams) > 0 {
+		_ = s.logger.Log("stream", "request", "returning", "existing")
 		c := s.streams[0]
 		return c, nil
 	}
+	_ = s.logger.Log("stream", "request", "returning", "new")
 
 	conn, err := s.conn()
 	if err != nil {
@@ -50,6 +55,7 @@ func (s *streamer) stream(ctx context.Context) (*stream, error) {
 	}
 
 	st := &stream{
+		id:          uniuri.New(),
 		conn:        conn,
 		channels:    make(channelList, 0, 5),
 		writes:      make(chan []byte, 5),
@@ -78,24 +84,55 @@ func (s *streamer) conn() (*websocket.Conn, error) {
 	return conn, err
 }
 
+func (s *streamer) resetStream(ctx context.Context, st *stream) error {
+	// remove stream from list
+	s.removeStream(st.id)
+
+	// get a new stream running
+	nst, err := s.stream(ctx)
+	if err != nil {
+		return err
+	}
+
+	// copy value from last stream to the new one
+	nst.lastID = st.lastID + 1
+	for k, v := range st.subscribers {
+		nst.subscribers[k] = v
+	}
+
+	// subscribe to the messages the old stream was subscribed to
+	msg := SubscribeMessage{
+		Method: Subscribe,
+		Params: st.channels,
+		ID:     nst.lastID,
+	}
+
+	b, err := json.Marshal(msg)
+	if err != nil {
+		return err
+	}
+	nst.writes <- b
+
+	return nil
+}
+
+func (s *streamer) removeStream(id string) {
+	for i, st := range s.streams {
+		if st.id == id {
+			s.streams = append(s.streams[:i], s.streams[i+1:]...)
+		}
+	}
+}
+
 func (s *streamer) monitor(ctx context.Context, st *stream) {
 	for {
-		ch := st.closed
 		select {
-		case nch := <-st.newClosed:
-			fmt.Println("got new closed")
-			ch = nch
-		case <-ch:
-			conn, err := s.conn()
-			if err != nil {
-				_ = s.logger.Log("streamer", "monitor", "error creating new connection", err.Error())
-				return
-			}
-			err = st.reset(ctx, conn)
+		case <-st.closed:
+			err := s.resetStream(ctx, st)
 			if err != nil {
 				_ = s.logger.Log("streamer", "monitor", "error resetting", err.Error())
-				return
 			}
+			return
 		case <-ctx.Done():
 			return
 		}

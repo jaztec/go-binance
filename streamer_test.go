@@ -60,8 +60,8 @@ func (s *testStreamServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		err = json.Unmarshal(msg, &parsed)
 		Expect(err).To(BeNil())
 
-		s.it++
 		stopMux.Lock()
+		s.it++
 		if stopTestServer {
 			s.afterStopped <- parsed
 		}
@@ -143,16 +143,16 @@ var _ = Describe("Streamer", func() {
 				_, err = a.Streamer().TickerArr(ctx)
 				Expect(err).To(BeNil())
 
-				//TODO This tests actually works sometimes but other times it blocks
-				//Expect(<-afterStopped).To(Equal(binance.SubscribeMessage{
-				//	Method: binance.Subscribe,
-				//	Params: []string{
-				//		"!ticker@arr",
-				//		"BTCETH@kline_5m",
-				//		"userDataStreamAllowed",
-				//	},
-				//	ID: 3,
-				//}))
+				////TODO This tests actually works sometimes but other times it blocks
+				Expect(<-afterStopped).To(Equal(binance.SubscribeMessage{
+					Method: binance.Subscribe,
+					Params: []string{
+						"!ticker@arr",
+						"BTCETH@kline_5m",
+						"userDataStreamAllowed",
+					},
+					ID: 4,
+				}))
 			})
 		})
 	})

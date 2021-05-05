@@ -53,6 +53,7 @@ type SubscribeMessage struct {
 }
 
 type stream struct {
+	id          string
 	conn        *websocket.Conn
 	channels    channelList
 	writes      chan []byte
@@ -60,35 +61,6 @@ type stream struct {
 	subscribers subscriberMap
 	logger      Logger
 	closed      chan struct{}
-	newClosed   chan chan struct{}
-}
-
-// reset allows the user to provide a new connection to the
-// stream that will continue work where it stopped. The Binance
-// API does a standard disconnect after 24h.
-func (s *stream) reset(ctx context.Context, conn *websocket.Conn) error {
-	newC := make(chan struct{})
-	s.newClosed <- newC
-	s.closed = newC
-
-	_ = s.conn.Close()
-	s.conn = conn
-	go s.readPump()
-	go s.writePump(ctx)
-
-	msg := SubscribeMessage{
-		Method: Subscribe,
-		Params: s.channels,
-		ID:     s.lastID,
-	}
-
-	b, err := json.Marshal(msg)
-	if err != nil {
-		return err
-	}
-	s.writes <- b
-
-	return nil
 }
 
 func (s *stream) unsubscribe(params []string) error {
