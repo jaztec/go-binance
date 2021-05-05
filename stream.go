@@ -67,6 +67,10 @@ type stream struct {
 // stream that will continue work where it stopped. The Binance
 // API does a standard disconnect after 24h.
 func (s *stream) reset(ctx context.Context, conn *websocket.Conn) error {
+	newC := make(chan struct{})
+	s.newClosed <- newC
+	s.closed = newC
+
 	_ = s.conn.Close()
 	s.conn = conn
 	go s.readPump()
@@ -83,10 +87,6 @@ func (s *stream) reset(ctx context.Context, conn *websocket.Conn) error {
 		return err
 	}
 	s.writes <- b
-
-	newC := make(chan struct{})
-	s.newClosed <- newC
-	s.closed = newC
 
 	return nil
 }
