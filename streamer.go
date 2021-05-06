@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/dchest/uniuri"
@@ -101,6 +102,7 @@ func (s *streamer) resetStream(ctx context.Context, st *stream) error {
 	}
 
 	// subscribe to the messages the old stream was subscribed to
+	_ = s.logger.Log("resetting", strings.Join(st.channels, ","))
 	msg := SubscribeMessage{
 		Method: Subscribe,
 		Params: st.channels,
