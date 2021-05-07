@@ -102,18 +102,20 @@ func (s *streamer) resetStream(ctx context.Context, st *stream) error {
 	}
 
 	// subscribe to the messages the old stream was subscribed to
-	_ = s.logger.Log("resetting", strings.Join(st.channels, ","))
-	msg := SubscribeMessage{
-		Method: Subscribe,
-		Params: st.channels,
-		ID:     nst.lastID,
-	}
+	if len(st.channels) > 0 {
+		_ = s.logger.Log("resetting", strings.Join(st.channels, ","))
+		msg := SubscribeMessage{
+			Method: Subscribe,
+			Params: st.channels,
+			ID:     nst.lastID,
+		}
 
-	b, err := json.Marshal(msg)
-	if err != nil {
-		return err
+		b, err := json.Marshal(msg)
+		if err != nil {
+			return err
+		}
+		nst.writes <- b
 	}
-	nst.writes <- b
 
 	return nil
 }
