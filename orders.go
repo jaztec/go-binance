@@ -75,9 +75,7 @@ const (
 )
 
 func init() {
-	requireSignature(allOrdersPath)
-	requireSignature(orderPath)
-	requireSignature(orderTestPath)
+	requireSignature(allOrdersPath, orderPath, orderTestPath)
 }
 
 func (a *api) AllOrders(symbol string, startTime, endTime int64, limit int) (uo []model.UserOrder, err error) {

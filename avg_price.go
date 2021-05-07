@@ -11,6 +11,9 @@ import (
 const avgPricePath = "/api/v3/avgPrice"
 
 func (a *api) AvgPrice(symbol string) (ap model.AvgPrice, err error) {
+	if symbol == "" {
+		return ap, NoSymbolProvided
+	}
 	q := NewParameters(1)
 	q.Set("symbol", symbol)
 

@@ -20,17 +20,12 @@ var (
 	signatureMut      = sync.Mutex{}
 )
 
-func requireSignature(path string) {
+func requireSignature(paths ...string) {
 	signatureMut.Lock()
 	defer signatureMut.Unlock()
-	signatureRequired[path] = struct{}{}
-}
-
-func generateSignature(secret, path string) string {
-	h := hmac.New(sha256.New, []byte(secret))
-	h.Write([]byte(path))
-
-	return hex.EncodeToString(h.Sum(nil))
+	for _, p := range paths {
+		signatureRequired[p] = struct{}{}
+	}
 }
 
 func requiresSignature(path string) bool {
@@ -38,6 +33,13 @@ func requiresSignature(path string) bool {
 	defer signatureMut.Unlock()
 	_, ok := signatureRequired[path]
 	return ok
+}
+
+func generateSignature(secret, path string) string {
+	h := hmac.New(sha256.New, []byte(secret))
+	h.Write([]byte(path))
+
+	return hex.EncodeToString(h.Sum(nil))
 }
 
 func (a *api) client() *http.Client {

@@ -29,7 +29,10 @@ func (s *streamer) Kline(ctx context.Context, symbols []string, interval string)
 			select {
 			case msg := <-reads:
 				var k model.KlineData
-				_ = json.Unmarshal(msg.Data, &k)
+				if err := json.Unmarshal(msg.Data, &k); err != nil {
+					_ = s.logger.Log("read", "kline", "error", err)
+					continue
+				}
 				readStream <- k
 			case <-ctx.Done():
 				return
