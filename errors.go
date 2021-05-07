@@ -3,7 +3,7 @@ package binance
 import (
 	"fmt"
 
-	"gitlab.jaztec.info/checkers/checkers/services/binance/model"
+	"github.com/jaztec/go-binance/model"
 )
 
 // APIError encapsulates some expected errors

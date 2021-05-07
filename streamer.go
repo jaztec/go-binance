@@ -11,7 +11,7 @@ import (
 	"github.com/dchest/uniuri"
 	"github.com/go-kit/kit/log"
 	"github.com/gorilla/websocket"
-	"gitlab.jaztec.info/checkers/checkers/services/binance/model"
+	"github.com/jaztec/go-binance/model"
 )
 
 // Streamer defines functions that are available in the Binance Websocket API.

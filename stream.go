@@ -8,7 +8,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"gitlab.jaztec.info/checkers/checkers/services/binance/model"
+	"github.com/jaztec/go-binance/model"
 
 	"github.com/gorilla/websocket"
 )

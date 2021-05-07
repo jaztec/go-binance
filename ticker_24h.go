@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"gitlab.jaztec.info/checkers/checkers/services/binance/model"
+	"github.com/jaztec/go-binance/model"
 )
 
 const ticker24hPath = "/api/v3/ticker/24hr"

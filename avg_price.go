@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"gitlab.jaztec.info/checkers/checkers/services/binance/model"
+	"github.com/jaztec/go-binance/model"
 )
 
 const avgPricePath = "/api/v3/avgPrice"

@@ -8,13 +8,13 @@ import (
 	"strings"
 	"sync"
 
-	"gitlab.jaztec.info/checkers/checkers/services/binance/model"
+	"github.com/jaztec/go-binance/model"
 
 	"github.com/gorilla/websocket"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	"gitlab.jaztec.info/checkers/checkers/services/binance"
+	"github.com/jaztec/go-binance"
 )
 
 var (

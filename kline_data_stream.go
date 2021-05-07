@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"gitlab.jaztec.info/checkers/checkers/services/binance/model"
+	"github.com/jaztec/go-binance/model"
 )
 
 func (s *streamer) Kline(ctx context.Context, symbols []string, interval string) (<-chan model.KlineData, error) {

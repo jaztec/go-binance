@@ -8,11 +8,11 @@ import (
 	"net/url"
 	"strings"
 
-	"gitlab.jaztec.info/checkers/checkers/services/binance/model"
+	"github.com/jaztec/go-binance/model"
 
+	"github.com/jaztec/go-binance"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"gitlab.jaztec.info/checkers/checkers/services/binance"
 )
 
 const (

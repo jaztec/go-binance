@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"gitlab.jaztec.info/checkers/checkers/services/binance/model"
+	"github.com/jaztec/go-binance/model"
 )
 
 const exchangeInfoPath = "/api/v3/exchangeInfo"

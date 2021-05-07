@@ -12,7 +12,7 @@ import (
 	"strings"
 	"sync"
 
-	"gitlab.jaztec.info/checkers/checkers/services/binance/model"
+	"github.com/jaztec/go-binance/model"
 )
 
 var (

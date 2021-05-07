@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
-	"gitlab.jaztec.info/checkers/checkers/services/binance/model"
+	"github.com/jaztec/go-binance/model"
 )
 
 func (s *streamer) TickerArr(ctx context.Context) (chan []model.Ticker, error) {

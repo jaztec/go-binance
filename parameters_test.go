@@ -3,9 +3,9 @@ package binance_test
 import (
 	"testing"
 
+	"github.com/jaztec/go-binance"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"gitlab.jaztec.info/checkers/checkers/services/binance"
 )
 
 var _ = Describe("Parameters", func() {
