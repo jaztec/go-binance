@@ -27,8 +27,7 @@ func main() {
 	ctx, cancelFn := context.WithCancel(context.Background())
 	defer cancelFn()
 
-	// use lowercase for streams
-	ch, err := b.Streamer().Kline(ctx, []string{"ethbtc"}, "1m")
+	ch, err := b.Streamer().Kline(ctx, []string{"ETHBTC"}, "1m")
 	if err != nil {
 		panic(err)
 	}

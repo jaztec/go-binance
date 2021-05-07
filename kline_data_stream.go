@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/jaztec/go-binance/model"
 )
@@ -11,8 +12,9 @@ import (
 func (s *streamer) Kline(ctx context.Context, symbols []string, interval string) (<-chan model.KlineData, error) {
 	params := make([]string, 0, len(symbols))
 	for _, s := range symbols {
-		params = append(params, fmt.Sprintf("%s@kline_%s", s, interval))
+		params = append(params, fmt.Sprintf("%s@kline_%s", strings.ToLower(s), interval))
 	}
+
 	st, err := s.stream(ctx)
 	if err != nil {
 		return nil, err
