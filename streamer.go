@@ -14,9 +14,13 @@ import (
 	"gitlab.jaztec.info/checkers/checkers/services/binance/model"
 )
 
+// Streamer defines functions that are available in the Binance Websocket API.
 type Streamer interface {
+	// UserDataStream updates when user account changes have occured
 	UserDataStream(ctx context.Context) (<-chan model.StreamData, error)
+	// Kline data for a list of tokens
 	Kline(ctx context.Context, symbols []string, interval string) (<-chan model.KlineData, error)
+	// TickerArr changes to prices from the ticker API
 	TickerArr(ctx context.Context) (chan []model.Ticker, error)
 }
 

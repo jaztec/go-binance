@@ -6,11 +6,19 @@ type Order struct {
 	Asks         [][]string `json:"asks"`
 }
 
+type OrderResponse interface {
+	Symbol() string
+	OrderID() int
+	OrderListID() int
+	ClientOrderID() string
+	TransactionTime() int64
+}
+
 type UserOrder struct {
 	Symbol              string `json:"symbol"`
-	OrderId             int    `json:"orderId"`
-	OrderListId         int    `json:"orderListId"`
-	ClientOrderId       string `json:"clientOrderId"`
+	OrderID             int    `json:"orderId"`
+	OrderListID         int    `json:"orderListId"`
+	ClientOrderID       string `json:"clientOrderId"`
 	Price               string `json:"price"`
 	OrigQty             string `json:"origQty"`
 	ExecutedQty         string `json:"executedQty"`
@@ -25,14 +33,6 @@ type UserOrder struct {
 	UpdateTime          int64  `json:"updateTime"`
 	IsWorking           bool   `json:"isWorking"`
 	OrigQuoteOrderQty   string `json:"origQuoteOrderQty"`
-}
-
-type OrderResponse interface {
-	Symbol() string
-	OrderID() int
-	OrderListID() int
-	ClientOrderID() string
-	TransactionTime() int64
 }
 
 type OrderResponseAck struct {

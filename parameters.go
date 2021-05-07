@@ -47,6 +47,7 @@ func (p *parameters) Set(key string, value ...string) {
 	}
 }
 
+// NewParameters returns a new parameter bag
 func NewParameters(initialLength int) Parameters {
 	return &parameters{
 		keys:   make([]string, 0, initialLength),

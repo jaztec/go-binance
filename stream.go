@@ -13,15 +13,19 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-type SubscribeType string
+// MessageType describes what kind of message is send, a subscribe
+// or unsubscribe
+type MessageType string
 
 const (
 	BaseStreamURI = "wss://stream.binance.com:9443"
 
 	pongPeriod = 2 * time.Minute
 
-	Subscribe   SubscribeType = "SUBSCRIBE"
-	Unsubscribe SubscribeType = "UNSUBSCRIBE"
+	// Subscribe to a channel
+	Subscribe MessageType = "SUBSCRIBE"
+	// Unsubscribe from a channel
+	Unsubscribe MessageType = "UNSUBSCRIBE"
 )
 
 type subscriberMap map[string][]chan model.StreamData
@@ -47,9 +51,9 @@ type StreamerConfig struct {
 // SubscribeMessage is a representation of the Binance subscribe and unsubscribe
 // messages data structure.
 type SubscribeMessage struct {
-	Method SubscribeType `json:"method"`
-	Params []string      `json:"params"`
-	ID     uint64        `json:"id"`
+	Method MessageType `json:"method"`
+	Params []string    `json:"params"`
+	ID     uint64      `json:"id"`
 }
 
 type stream struct {

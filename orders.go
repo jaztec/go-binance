@@ -20,39 +20,58 @@ const (
 	orderTestPath = "/api/v3/order/test"
 )
 
+// OrderType reflects the available Binance order types
 type OrderType string
 
 const (
-	Limit           OrderType = "LIMIT"
-	Market          OrderType = "MARKET"
-	StopLoss        OrderType = "STOP_LOSS"
-	StopLossLimit   OrderType = "STOP_LOSS_LIMIT"
-	TakeProfit      OrderType = "TAKE_PROFIT"
+	// Limit order
+	Limit OrderType = "LIMIT"
+	// Market order
+	Market OrderType = "MARKET"
+	// StopLoss order
+	StopLoss OrderType = "STOP_LOSS"
+	// StopLossLimit order
+	StopLossLimit OrderType = "STOP_LOSS_LIMIT"
+	// TakeProfit order
+	TakeProfit OrderType = "TAKE_PROFIT"
+	// TakeProfitLimit order
 	TakeProfitLimit OrderType = "TAKE_PROFIT_LIMIT"
-	LimitMaker      OrderType = "LIMIT_MAKER"
+	// LimitMaker order
+	LimitMaker OrderType = "LIMIT_MAKER"
 )
 
+// OrderResponseType reflects the Binance order response types
 type OrderResponseType string
 
 const (
-	Ack    OrderResponseType = "ACK"
+	// Ack order response
+	Ack OrderResponseType = "ACK"
+	// Result order response
 	Result OrderResponseType = "RESULT"
-	Full   OrderResponseType = "FULL"
+	// Full order response
+	Full OrderResponseType = "FULL"
 )
 
+// OrderSide reflects the available Binance order sides
 type OrderSide string
 
 const (
-	Buy  OrderSide = "BUY"
+	// Buy order
+	Buy OrderSide = "BUY"
+	// Sell order
 	Sell OrderSide = "SELL"
 )
 
+// TimeInForce reflects the Binance enums how long an order should stay in place
 type TimeInForce string
 
 const (
-	GoodTilCanceled   TimeInForce = "GTC"
+	// GoodTilCanceled order
+	GoodTilCanceled TimeInForce = "GTC"
+	// ImmediateOrCancel order
 	ImmediateOrCancel TimeInForce = "IOC"
-	FillOrKill        TimeInForce = "FOK"
+	// FillOrKill order
+	FillOrKill TimeInForce = "FOK"
 )
 
 func init() {
@@ -114,6 +133,8 @@ func (a *api) Depth(symbol string, limit int) (o model.Order, err error) {
 	return o, nil
 }
 
+// OrderParams hold all optional parameters for a new order. Some parameters
+// may still be enforced depending on the OrderType
 type OrderParams struct {
 	TimeInForce      TimeInForce
 	Quantity         float64
@@ -236,15 +257,9 @@ func checkOrderParams(ot OrderType, params OrderParams) error {
 		if err1 != nil && err2 != nil {
 			return errors.New("required: Quantity or QuoteOrderQty")
 		}
-	case LimitMaker:
-		fallthrough
-	case StopLoss:
-		fallthrough
-	case TakeProfit:
+	case LimitMaker, StopLoss, TakeProfit:
 		return check([]string{"Quantity", "StopPrice"})
-	case StopLossLimit:
-		fallthrough
-	case TakeProfitLimit:
+	case StopLossLimit, TakeProfitLimit:
 		return check([]string{"TimeInForce", "Quantity", "Price", "StopPrice"})
 	}
 	return nil

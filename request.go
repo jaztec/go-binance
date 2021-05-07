@@ -71,11 +71,11 @@ func (a *api) request(method string, path string, query Parameters) (*http.Reque
 		body = strings.NewReader(qS)
 	}
 
-	fullUrl := a.cfg.BaseURI + path
+	fullURL := a.cfg.BaseURI + path
 
-	_ = a.logger.Log("calling", fmt.Sprintf("%s %s", method, fullUrl), "params", qS)
+	_ = a.logger.Log("calling", fmt.Sprintf("%s %s", method, fullURL), "params", qS)
 
-	r, err := http.NewRequest(method, fullUrl, body)
+	r, err := http.NewRequest(method, fullURL, body)
 	if err != nil {
 		return nil, err
 	}
