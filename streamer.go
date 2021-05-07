@@ -104,6 +104,7 @@ func (s *streamer) resetStream(ctx context.Context, st *stream) error {
 	for k, v := range st.subscribers {
 		nst.subscribers[k] = v
 	}
+	nst.channels = make([]string, len(st.channels))
 	copy(nst.channels, st.channels)
 
 	_ = s.logger.Log("resetting", strings.Join(nst.channels, ","))
