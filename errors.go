@@ -1,15 +1,22 @@
 package binance
 
-import "fmt"
+import (
+	"fmt"
+
+	"gitlab.jaztec.info/checkers/checkers/services/binance/model"
+)
 
 // APIError encapsulates some expected errors
 type APIError struct {
-	code int
-	msg  string
+	msg string
+	err *model.Error
 }
 
 // Satisfy the Error interface
 func (bae APIError) Error() string {
+	if bae.err != nil {
+		return bae.err.Error()
+	}
 	return fmt.Sprintf("msg=%s", bae.msg)
 }
 

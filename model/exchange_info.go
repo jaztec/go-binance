@@ -1,5 +1,6 @@
 package model
 
+// SymbolInfo provides data about a symbol
 type SymbolInfo struct {
 	Symbol                     string        `json:"symbol"`
 	Status                     string        `json:"status"`
@@ -20,6 +21,7 @@ type SymbolInfo struct {
 	Permissions                []string      `json:"permissions"`
 }
 
+// ExchangeInfo holds data about the exchange and internals
 type ExchangeInfo struct {
 	Timezone        string        `json:"timezone"`
 	ServerTime      int64         `json:"serverTime"`

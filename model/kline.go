@@ -1,12 +1,13 @@
 package model
 
+// Kline /Candlestick data for a symbol
 type Kline struct {
 	StartTime                int64  `json:"t"`
 	CloseTime                int64  `json:"T"`
 	Symbol                   string `json:"s"`
 	Interval                 string `json:"i"`
-	FirstTradeId             int    `json:"f"`
-	LastTradeId              int    `json:"L"`
+	FirstTradeID             int    `json:"f"`
+	LastTradeID              int    `json:"L"`
 	OpenPrice                string `json:"o"`
 	ClosePrice               string `json:"c"`
 	HighPrice                string `json:"h"`
@@ -19,6 +20,7 @@ type Kline struct {
 	TakerBuyQuoteAssetVolume string `json:"Q"`
 }
 
+// KlineData wrapper for a symbol
 type KlineData struct {
 	Type   string `json:"e"`
 	Time   int64  `json:"E"`

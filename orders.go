@@ -110,7 +110,7 @@ func (a *api) AllOrders(symbol string, startTime, endTime int64, limit int) (uo 
 	return uo, nil
 }
 
-func (a *api) Depth(symbol string, limit int) (o model.Order, err error) {
+func (a *api) Depth(symbol string, limit int) (o model.Orders, err error) {
 	if symbol == "" {
 		return o, NoSymbolProvided
 	}
@@ -127,7 +127,7 @@ func (a *api) Depth(symbol string, limit int) (o model.Order, err error) {
 
 	err = json.Unmarshal(body, &o)
 	if err != nil {
-		return o, fmt.Errorf("encountered error while unmarshaling '%s' into model.Order", body)
+		return o, fmt.Errorf("encountered error while unmarshaling '%s' into model.Orders", body)
 	}
 
 	return o, nil

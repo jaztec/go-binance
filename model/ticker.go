@@ -1,5 +1,6 @@
 package model
 
+// Ticker represents raw ticker data
 type Ticker struct {
 	MessageType            string `json:"e"`
 	EventTime              int64  `json:"E"`
@@ -26,6 +27,7 @@ type Ticker struct {
 	NumberOfTrades         int    `json:"n"`
 }
 
+// TickerStatistics hold data about the ticker data for a symbol
 type TickerStatistics struct {
 	Symbol             string `json:"symbol"`
 	PriceChange        string `json:"priceChange"`

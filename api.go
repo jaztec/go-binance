@@ -75,7 +75,7 @@ type API interface {
 	// AvgPrice of a symbol
 	AvgPrice(symbol string) (model.AvgPrice, error)
 	// Depth endpoint on Binance API
-	Depth(symbol string, limit int) (model.Order, error)
+	Depth(symbol string, limit int) (model.Orders, error)
 	// ExchangeInfo as set by Binance
 	ExchangeInfo() (model.ExchangeInfo, error)
 	// Order to put into the Binance system

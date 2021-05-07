@@ -18,6 +18,7 @@ import (
 type MessageType string
 
 const (
+	// BaseStreamURI for the Binance websocket API
 	BaseStreamURI = "wss://stream.binance.com:9443"
 
 	pongPeriod = 2 * time.Minute
@@ -43,6 +44,7 @@ func (cl channelList) IndexOf(s string) int {
 	return -1
 }
 
+// StreamerConfig declares what a new Streamer needs to run
 type StreamerConfig struct {
 	API           API
 	BaseStreamURI string

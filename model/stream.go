@@ -2,6 +2,8 @@ package model
 
 import "encoding/json"
 
+// StreamData holds the upmost fields of a stream package. The data can represent any
+// described package.
 type StreamData struct {
 	Stream string          `json:"stream"`
 	Data   json.RawMessage `json:"data"`
