@@ -95,18 +95,19 @@ func (s *streamer) resetStream(ctx context.Context, st *stream) error {
 		return err
 	}
 
-	// copy value from last stream to the new one
+	// copy values from last stream to the new one
 	nst.lastID = st.lastID + 1
 	for k, v := range st.subscribers {
 		nst.subscribers[k] = v
 	}
+	copy(nst.channels, st.channels)
 
-	// subscribe to the messages the old stream was subscribed to
-	if len(st.channels) > 0 {
-		_ = s.logger.Log("resetting", strings.Join(st.channels, ","))
+	_ = s.logger.Log("resetting", strings.Join(nst.channels, ","))
+	// subscribe to the channels the old stream was subscribed to
+	if len(nst.channels) > 0 {
 		msg := SubscribeMessage{
 			Method: Subscribe,
-			Params: st.channels,
+			Params: nst.channels,
 			ID:     nst.lastID,
 		}
 
