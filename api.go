@@ -10,8 +10,9 @@ import (
 )
 
 const (
-	BaseApiURI = "https://api.binance.com"
-
+	// BaseAPIURI contains the default Binance API location
+	BaseAPIURI = "https://api.binance.com"
+	// APIKeyHeaderName is the header name Binance API expects the API token to be
 	APIKeyHeaderName = "X-MBX-APIKEY"
 )
 
@@ -52,24 +53,41 @@ func (wc weightChecker) checkResponse(response *http.Response) *APIError {
 	return nil
 }
 
+// APIConfig lets us setup the values required by the adapter
 type APIConfig struct {
-	Key           string
-	Secret        string
-	BaseURI       string
+	// API Key to be used in the communication
+	Key string
+	// Secret attached to the API Key
+	Secret string
+	// BaseURI of the API. Will default to BaseAPIURI
+	BaseURI string
+	// BaseStreamURI for the websocket API. Will default to BaseStreamURI
 	BaseStreamURI string
 }
 
+// API interface exposes all the available (implemented) endpoints to the Binance REST API. The Streamer can be
+// used to start streams onto websockets.
 type API interface {
+	// Account information
 	Account() (ai model.AccountInfo, err error)
+	// AllOrders for a symbol from the user account
 	AllOrders(symbol string, startTime, endTime int64, limit int) ([]model.UserOrder, error)
+	// AvgPrice of a symbol
 	AvgPrice(symbol string) (model.AvgPrice, error)
+	// Depth endpoint on Binance API
 	Depth(symbol string, limit int) (model.Order, error)
+	// ExchangeInfo as set by Binance
 	ExchangeInfo() (model.ExchangeInfo, error)
+	// Order to put into the Binance system
 	Order(symbol string, side OrderSide, orderType OrderType, params OrderParams) (model.OrderResponse, error)
+	// OrderTest will validate an order but not put it into the system
 	OrderTest(symbol string, side OrderSide, orderType OrderType, params OrderParams) (model.OrderResponse, error)
+	// Ticker24h will retrieve information about a symbol for a 24H period. WARNING, heavy penalty
 	Ticker24h(symbol string) ([]model.TickerStatistics, error)
+	// TickerPrice returns price information about a symbol
 	TickerPrice(symbol string) ([]model.Price, error)
 
+	// Streamer returns a Streamer
 	Streamer() Streamer
 }
 
@@ -92,9 +110,16 @@ func (a *api) Streamer() Streamer {
 	return a.streamer
 }
 
+// NewAPI will return a new API interface fully setup to run
 func NewAPI(cfg APIConfig, logger Logger) (API, error) {
 	if logger == nil {
 		return nil, errors.New("api expects an instantiated logger")
+	}
+	if cfg.BaseURI == "" {
+		cfg.BaseURI = BaseAPIURI
+	}
+	if cfg.BaseStreamURI == "" {
+		cfg.BaseStreamURI = BaseStreamURI
 	}
 	a := &api{
 		cfg: cfg,

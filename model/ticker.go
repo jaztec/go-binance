@@ -43,7 +43,7 @@ type TickerStatistics struct {
 	QuoteVolume        string `json:"quoteVolume"`
 	OpenTime           int64  `json:"openTime"`
 	CloseTime          int64  `json:"closeTime"`
-	FirstId            int    `json:"firstId"`
-	LastId             int    `json:"lastId"`
+	FirstID            int    `json:"firstId"`
+	LastID             int    `json:"lastId"`
 	Count              int    `json:"count"`
 }

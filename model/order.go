@@ -1,7 +1,7 @@
 package model
 
 type Order struct {
-	LastUpdateId int        `json:"lastUpdateId"`
+	LastUpdateID int        `json:"lastUpdateId"`
 	Bids         [][]string `json:"bids"`
 	Asks         [][]string `json:"asks"`
 }
@@ -29,9 +29,9 @@ type UserOrder struct {
 
 type OrderResponse interface {
 	Symbol() string
-	OrderId() int
-	OrderListId() int
-	ClientOrderId() string
+	OrderID() int
+	OrderListID() int
+	ClientOrderID() string
 	TransactionTime() int64
 }
 
@@ -44,9 +44,9 @@ type OrderResponseAck struct {
 }
 
 func (r OrderResponseAck) Symbol() string         { return r.Sym }
-func (r OrderResponseAck) OrderId() int           { return r.Order }
-func (r OrderResponseAck) OrderListId() int       { return r.OrderList }
-func (r OrderResponseAck) ClientOrderId() string  { return r.ClientOrder }
+func (r OrderResponseAck) OrderID() int           { return r.Order }
+func (r OrderResponseAck) OrderListID() int       { return r.OrderList }
+func (r OrderResponseAck) ClientOrderID() string  { return r.ClientOrder }
 func (r OrderResponseAck) TransactionTime() int64 { return r.TransactTime }
 
 type OrderResponseResult struct {
@@ -66,9 +66,9 @@ type OrderResponseResult struct {
 }
 
 func (r OrderResponseResult) Symbol() string         { return r.Sym }
-func (r OrderResponseResult) OrderId() int           { return r.Order }
-func (r OrderResponseResult) OrderListId() int       { return r.OrderList }
-func (r OrderResponseResult) ClientOrderId() string  { return r.ClientOrder }
+func (r OrderResponseResult) OrderID() int           { return r.Order }
+func (r OrderResponseResult) OrderListID() int       { return r.OrderList }
+func (r OrderResponseResult) ClientOrderID() string  { return r.ClientOrder }
 func (r OrderResponseResult) TransactionTime() int64 { return r.TransactTime }
 
 type Fill struct {
@@ -96,7 +96,7 @@ type OrderResponseFull struct {
 }
 
 func (r OrderResponseFull) Symbol() string         { return r.Sym }
-func (r OrderResponseFull) OrderId() int           { return r.Order }
-func (r OrderResponseFull) OrderListId() int       { return r.OrderList }
-func (r OrderResponseFull) ClientOrderId() string  { return r.ClientOrder }
+func (r OrderResponseFull) OrderID() int           { return r.Order }
+func (r OrderResponseFull) OrderListID() int       { return r.OrderList }
+func (r OrderResponseFull) ClientOrderID() string  { return r.ClientOrder }
 func (r OrderResponseFull) TransactionTime() int64 { return r.TransactTime }
