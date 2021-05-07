@@ -104,6 +104,7 @@ func (s *streamer) resetStream(ctx context.Context, st *stream) error {
 
 	_ = s.logger.Log("resetting", strings.Join(nst.channels, ","))
 	// subscribe to the channels the old stream was subscribed to
+	// we purposely don't use subscribe method to keep subscriber map intact
 	if len(nst.channels) > 0 {
 		msg := SubscribeMessage{
 			Method: Subscribe,
