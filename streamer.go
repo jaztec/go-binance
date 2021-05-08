@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/dchest/uniuri"
-	"github.com/go-kit/kit/log"
 	"github.com/gorilla/websocket"
 	"github.com/jaztec/go-binance/model"
 )
@@ -150,7 +149,7 @@ func (s *streamer) monitor(ctx context.Context, st *stream) {
 	}
 }
 
-func newStreamer(a *api, logger log.Logger) Streamer {
+func newStreamer(a *api, logger Logger) Streamer {
 	return &streamer{
 		api:    a,
 		logger: logger,
