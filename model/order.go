@@ -1,5 +1,81 @@
 package model
 
+// OrderType reflects the available Binance order types
+type OrderType string
+
+const (
+	// Limit order
+	Limit OrderType = "LIMIT"
+	// Market order
+	Market OrderType = "MARKET"
+	// StopLoss order
+	StopLoss OrderType = "STOP_LOSS"
+	// StopLossLimit order
+	StopLossLimit OrderType = "STOP_LOSS_LIMIT"
+	// TakeProfit order
+	TakeProfit OrderType = "TAKE_PROFIT"
+	// TakeProfitLimit order
+	TakeProfitLimit OrderType = "TAKE_PROFIT_LIMIT"
+	// LimitMaker order
+	LimitMaker OrderType = "LIMIT_MAKER"
+)
+
+// OrderResponseType reflects the Binance order response types
+type OrderResponseType string
+
+const (
+	// Ack order response
+	Ack OrderResponseType = "ACK"
+	// Result order response
+	Result OrderResponseType = "RESULT"
+	// Full order response
+	Full OrderResponseType = "FULL"
+)
+
+// OrderSide reflects the available Binance order sides
+type OrderSide string
+
+const (
+	// Buy order
+	Buy OrderSide = "BUY"
+	// Sell order
+	Sell OrderSide = "SELL"
+)
+
+// TimeInForce reflects the Binance enums how long an order should stay in place
+type TimeInForce string
+
+const (
+	// GoodTilCanceled order
+	GoodTilCanceled TimeInForce = "GTC"
+	// ImmediateOrCancel order
+	ImmediateOrCancel TimeInForce = "IOC"
+	// FillOrKill order
+	FillOrKill TimeInForce = "FOK"
+)
+
+// ExecutionType enumerates different execution types an order can have
+type ExecutionType string
+
+const (
+	// New - The order has been accepted into the engine.
+	New ExecutionType = "NEW"
+	// Canceled - The order has been canceled by the user.
+	Canceled ExecutionType = "CANCELED"
+	// Replaced - (currently unused)
+	Replaced ExecutionType = "REPLACED"
+	// Rejected - The order has been rejected and was not processed. (This is never
+	// pushed into the User Data Stream)
+	Rejected ExecutionType = "REJECTED"
+	// Trade - Part of the order or all of the order's quantity has filled.
+	Trade ExecutionType = "TRADE"
+	// Expired - The order was canceled according to the order type's rules (e.g.
+	// LIMIT FOK orders with no fill, LIMIT IOC or MARKET orders that partially
+	// fill) or by the exchange, (e.g. orders canceled during liquidation, orders
+	// canceled during maintenance)
+	Expired ExecutionType = "EXPIRED"
+)
+
 // Orders holds information from the depth endpoint of the Binance API
 type Orders struct {
 	LastUpdateID int        `json:"lastUpdateId"`

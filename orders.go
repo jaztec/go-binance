@@ -20,60 +20,6 @@ const (
 	orderTestPath = "/api/v3/order/test"
 )
 
-// OrderType reflects the available Binance order types
-type OrderType string
-
-const (
-	// Limit order
-	Limit OrderType = "LIMIT"
-	// Market order
-	Market OrderType = "MARKET"
-	// StopLoss order
-	StopLoss OrderType = "STOP_LOSS"
-	// StopLossLimit order
-	StopLossLimit OrderType = "STOP_LOSS_LIMIT"
-	// TakeProfit order
-	TakeProfit OrderType = "TAKE_PROFIT"
-	// TakeProfitLimit order
-	TakeProfitLimit OrderType = "TAKE_PROFIT_LIMIT"
-	// LimitMaker order
-	LimitMaker OrderType = "LIMIT_MAKER"
-)
-
-// OrderResponseType reflects the Binance order response types
-type OrderResponseType string
-
-const (
-	// Ack order response
-	Ack OrderResponseType = "ACK"
-	// Result order response
-	Result OrderResponseType = "RESULT"
-	// Full order response
-	Full OrderResponseType = "FULL"
-)
-
-// OrderSide reflects the available Binance order sides
-type OrderSide string
-
-const (
-	// Buy order
-	Buy OrderSide = "BUY"
-	// Sell order
-	Sell OrderSide = "SELL"
-)
-
-// TimeInForce reflects the Binance enums how long an order should stay in place
-type TimeInForce string
-
-const (
-	// GoodTilCanceled order
-	GoodTilCanceled TimeInForce = "GTC"
-	// ImmediateOrCancel order
-	ImmediateOrCancel TimeInForce = "IOC"
-	// FillOrKill order
-	FillOrKill TimeInForce = "FOK"
-)
-
 func init() {
 	requireSignature(allOrdersPath, orderPath, orderTestPath)
 }
@@ -134,25 +80,25 @@ func (a *api) Depth(symbol string, limit int) (o model.Orders, err error) {
 // OrderParams hold all optional parameters for a new order. Some parameters
 // may still be enforced depending on the OrderType
 type OrderParams struct {
-	TimeInForce      TimeInForce
+	TimeInForce      model.TimeInForce
 	Quantity         float64
 	QuoteOrderQty    float64
 	Price            float64
 	StopPrice        float64
 	IcebergQty       float64
-	NewOrderRespType OrderResponseType
+	NewOrderRespType model.OrderResponseType
 	RecvWindow       int64
 }
 
-func (a *api) Order(symbol string, side OrderSide, orderType OrderType, params OrderParams) (model.OrderResponse, error) {
+func (a *api) Order(symbol string, side model.OrderSide, orderType model.OrderType, params OrderParams) (model.OrderResponse, error) {
 	return a.doOrder(orderPath, symbol, side, orderType, params)
 }
 
-func (a *api) OrderTest(symbol string, side OrderSide, orderType OrderType, params OrderParams) (model.OrderResponse, error) {
+func (a *api) OrderTest(symbol string, side model.OrderSide, orderType model.OrderType, params OrderParams) (model.OrderResponse, error) {
 	return a.doOrder(orderTestPath, symbol, side, orderType, params)
 }
 
-func (a *api) doOrder(path string, symbol string, side OrderSide, orderType OrderType, params OrderParams) (model.OrderResponse, error) {
+func (a *api) doOrder(path string, symbol string, side model.OrderSide, orderType model.OrderType, params OrderParams) (model.OrderResponse, error) {
 	if err := checkOrderParams(orderType, params); err != nil {
 		return nil, err
 	}
@@ -188,13 +134,13 @@ func (a *api) doOrder(path string, symbol string, side OrderSide, orderType Orde
 	return i, nil
 }
 
-func orderResponse(t OrderResponseType) interface{} {
+func orderResponse(t model.OrderResponseType) interface{} {
 	switch t {
-	case Ack:
+	case model.Ack:
 		return &model.OrderResponseAck{}
-	case Result:
+	case model.Result:
 		return &model.OrderResponseResult{}
-	case Full:
+	case model.Full:
 		return &model.OrderResponseFull{}
 	default:
 		return &model.OrderResponseAck{}
@@ -228,7 +174,7 @@ func addOrderParams(p Parameters, params OrderParams) {
 	}
 }
 
-func checkOrderParams(ot OrderType, params OrderParams) error {
+func checkOrderParams(ot model.OrderType, params OrderParams) error {
 	check := func(n []string) error {
 		missing := make([]string, 0, len(n))
 		v := reflect.ValueOf(params)
@@ -247,17 +193,17 @@ func checkOrderParams(ot OrderType, params OrderParams) error {
 	}
 
 	switch ot {
-	case Limit:
+	case model.Limit:
 		return check([]string{"TimeInForce", "Quantity", "Price"})
-	case Market:
+	case model.Market:
 		err1 := check([]string{"Quantity"})
 		err2 := check([]string{"QuoteOrderQty"})
 		if err1 != nil && err2 != nil {
 			return errors.New("required: Quantity or QuoteOrderQty")
 		}
-	case LimitMaker, StopLoss, TakeProfit:
+	case model.LimitMaker, model.StopLoss, model.TakeProfit:
 		return check([]string{"Quantity", "StopPrice"})
-	case StopLossLimit, TakeProfitLimit:
+	case model.StopLossLimit, model.TakeProfitLimit:
 		return check([]string{"TimeInForce", "Quantity", "Price", "StopPrice"})
 	}
 	return nil

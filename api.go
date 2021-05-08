@@ -79,9 +79,9 @@ type API interface {
 	// ExchangeInfo as set by Binance
 	ExchangeInfo() (model.ExchangeInfo, error)
 	// Order to put into the Binance system
-	Order(symbol string, side OrderSide, orderType OrderType, params OrderParams) (model.OrderResponse, error)
+	Order(symbol string, side model.OrderSide, orderType model.OrderType, params OrderParams) (model.OrderResponse, error)
 	// OrderTest will validate an order but not put it into the system
-	OrderTest(symbol string, side OrderSide, orderType OrderType, params OrderParams) (model.OrderResponse, error)
+	OrderTest(symbol string, side model.OrderSide, orderType model.OrderType, params OrderParams) (model.OrderResponse, error)
 	// Ticker24h will retrieve information about a symbol for a 24H period. WARNING, heavy penalty
 	Ticker24h(symbol string) ([]model.TickerStatistics, error)
 	// TickerPrice returns price information about a symbol

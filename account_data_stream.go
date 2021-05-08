@@ -1,8 +1,10 @@
 package binance
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -12,7 +14,7 @@ import (
 
 const userDataStreamPath = "/api/v3/userDataStream"
 
-func (s *streamer) UserDataStream(ctx context.Context) (<-chan model.StreamData, error) {
+func (s *streamer) UserDataStream(ctx context.Context) (<-chan model.UserAccountUpdate, error) {
 	res, err := s.api.doRequest(http.MethodPost, userDataStreamPath, nil)
 	if err != nil {
 		return nil, err
@@ -38,5 +40,45 @@ func (s *streamer) UserDataStream(ctx context.Context) (<-chan model.StreamData,
 	path := fmt.Sprintf("%s?%s", userDataStreamPath, p.Encode())
 	s.keepAlive(ctx, path, time.Minute*30)
 
-	return reads, nil
+	ch := make(chan model.UserAccountUpdate, 5)
+	go func() {
+		for {
+			select {
+			case msg := <-reads:
+				m, err := findModel(msg.Data)
+				if err != nil {
+					fmt.Println(string(msg.Data))
+					_ = s.logger.Log("stream", "account_data_stream", "error", err.Error())
+					continue
+				}
+				ch <- m
+			case <-ctx.Done():
+				return
+			}
+		}
+	}()
+
+	return ch, nil
+}
+
+func findModel(in []byte) (model.UserAccountUpdate, error) {
+	cmp := func(b []byte, update model.AccountUpdateType) bool {
+		return bytes.Contains(b, []byte(fmt.Sprintf("\"e\":\"%s\"", string(update))))
+	}
+	if cmp(in, model.OutboundAccountPositionType) {
+		out := model.OutboundAccountPosition{}
+		err := json.Unmarshal(in, &out)
+		return out, err
+	}
+	if cmp(in, model.BalanceUpdateType) {
+		out := model.BalanceUpdate{}
+		err := json.Unmarshal(in, &out)
+		return out, err
+	}
+	if cmp(in, model.ExecutionReportType) {
+		out := model.ExecutionReport{}
+		err := json.Unmarshal(in, &out)
+		return out, err
+	}
+	return nil, errors.New("no AccountUpdateType matched")
 }

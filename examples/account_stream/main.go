@@ -44,7 +44,7 @@ func main() {
 		for {
 			select {
 			case msg := <-ch:
-				fmt.Println(string(msg.Data))
+				fmt.Println(msg)
 			case <-ctx.Done():
 				return
 			}

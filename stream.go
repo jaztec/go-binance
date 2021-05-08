@@ -3,7 +3,6 @@ package binance
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"sort"
 	"strings"
 	"sync/atomic"
@@ -145,7 +144,6 @@ func (s *stream) readPump() {
 	}()
 	for {
 		_, msg, err := s.conn.ReadMessage()
-		fmt.Println(string(msg))
 		if err != nil {
 			_ = s.logger.Log("method", "readPump", "error", err.Error())
 			close(s.closed)
