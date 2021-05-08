@@ -14,7 +14,7 @@ import (
 type logger struct{}
 
 func (*logger) Log(vals ...interface{}) error {
-	log.Println(vals)
+	log.Println(vals...)
 	return nil
 }
 

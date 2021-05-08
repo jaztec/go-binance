@@ -110,7 +110,7 @@ var _ = Describe("Streamer", func() {
 			It("should call Kline function", func() {
 				ctx, cancelFn := context.WithCancel(context.Background())
 				defer cancelFn()
-				_, err := a.Streamer().Kline(ctx, []string{"BTCETH"}, "5m")
+				_, err := a.Streamer().Kline(ctx, []string{"ETHBTC"}, "5m")
 				Expect(err).To(BeNil())
 			})
 
@@ -136,19 +136,18 @@ var _ = Describe("Streamer", func() {
 				defer cancelFn()
 				var err error
 
-				_, err = a.Streamer().Kline(ctx, []string{"BTCETH"}, "5m")
+				_, err = a.Streamer().Kline(ctx, []string{"ETHBTC"}, "5m")
 				Expect(err).To(BeNil())
 				_, err = a.Streamer().UserDataStream(ctx)
 				Expect(err).To(BeNil())
 				_, err = a.Streamer().TickerArr(ctx)
 				Expect(err).To(BeNil())
 
-				////TODO This tests actually works sometimes but other times it blocks
 				Expect(<-afterStopped).To(Equal(binance.SubscribeMessage{
 					Method: binance.Subscribe,
 					Params: []string{
 						"!ticker@arr",
-						"BTCETH@kline_5m",
+						"ethbtc@kline_5m",
 						"userDataStreamAllowed",
 					},
 					ID: 4,
