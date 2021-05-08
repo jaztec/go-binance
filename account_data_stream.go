@@ -47,7 +47,6 @@ func (s *streamer) UserDataStream(ctx context.Context) (<-chan model.UserAccount
 			case msg := <-reads:
 				m, err := findModel(msg.Data)
 				if err != nil {
-					fmt.Println(string(msg.Data))
 					_ = s.logger.Log("stream", "account_data_stream", "error", err.Error())
 					continue
 				}
