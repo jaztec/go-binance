@@ -90,7 +90,7 @@ var _ = Describe("Stream", func() {
 			var start = func(withStopper uint32, afterStopped chan binance.SubscribeMessage) {
 				s := startTestStreamServer(withStopper, afterStopped)
 				var err error
-				a, err = binance.NewAPI(binance.APIConfig{
+				a, err = binance.NewAPICaller(binance.APIConfig{
 					Key:           apiKey,
 					Secret:        apiSecret,
 					BaseURI:       s.URL,

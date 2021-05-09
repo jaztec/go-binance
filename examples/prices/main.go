@@ -15,7 +15,7 @@ func (*logger) Log(vals ...interface{}) error {
 }
 
 func main() {
-	b, err := binance.NewAPI(binance.APIConfig{}, &logger{})
+	b, err := binance.NewAPICaller(binance.APIConfig{}, &logger{})
 	if err != nil {
 		panic(err)
 	}

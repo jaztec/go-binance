@@ -127,8 +127,8 @@ func (a *api) StreamCaller() StreamCaller {
 	return a.streamer.(StreamCaller)
 }
 
-// NewAPI will return a new API interface fully setup to run
-func NewAPI(cfg APIConfig, logger Logger) (API, error) {
+// NewAPICaller will return a new API interface fully setup to run
+func NewAPICaller(cfg APIConfig, logger Logger) (APICaller, error) {
 	if logger == nil {
 		return nil, errors.New("api expects an instantiated logger")
 	}

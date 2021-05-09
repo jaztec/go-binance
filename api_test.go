@@ -43,7 +43,7 @@ func testServer(expectedPath string, expectedQueryParts map[string]struct{}, sta
 func newAPI(uri string) binance.APICaller {
 	defer GinkgoRecover()
 
-	a, err := binance.NewAPI(binance.APIConfig{
+	a, err := binance.NewAPICaller(binance.APIConfig{
 		Key:           apiKey,
 		Secret:        apiSecret,
 		BaseURI:       uri,
@@ -65,7 +65,7 @@ var _ = Describe("Api", func() {
 		var a binance.API
 		BeforeEach(func() {
 			var err error
-			a, err = binance.NewAPI(binance.APIConfig{
+			a, err = binance.NewAPICaller(binance.APIConfig{
 				Key:           apiKey,
 				Secret:        apiSecret,
 				BaseURI:       "http://mies.mees",
@@ -77,7 +77,7 @@ var _ = Describe("Api", func() {
 		It("should create a new API", func() {
 			Expect(a).ToNot(BeNil())
 
-			_, err := binance.NewAPI(binance.APIConfig{
+			_, err := binance.NewAPICaller(binance.APIConfig{
 				Key:           apiKey,
 				Secret:        apiSecret,
 				BaseURI:       "http://mies.mees",

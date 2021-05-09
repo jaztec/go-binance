@@ -24,7 +24,7 @@ func main() {
 	secret := flag.String("secret", "false", "The secret that belongs to the API key")
 	flag.Parse()
 
-	b, err := binance.NewAPI(binance.APIConfig{
+	b, err := binance.NewAPICaller(binance.APIConfig{
 		Key:    *key,
 		Secret: *secret,
 	}, &logger{})
