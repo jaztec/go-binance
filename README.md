@@ -2,6 +2,7 @@
 [![License MIT](https://img.shields.io/badge/License-MIT-brightgreen.svg)](https://github.com/jaztec/go-binance/blob/master/LICENSE)
 [![Go Report Card](https://goreportcard.com/badge/github.com/jaztec/go-binance)](https://goreportcard.com/report/github.com/jaztec/go-binance)
 [![codecov](https://codecov.io/gh/jaztec/go-binance/branch/main/graph/badge.svg?token=VYL719M4RA)](https://codecov.io/gh/jaztec/go-binance)
+[![GoDoc](https://godoc.org/github.com/jaztec/go-binance?status.svg)](https://pkg.go.dev/github.com/jaztec/go-binance)
 
 # Go Binance API SDK
 
