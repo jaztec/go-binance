@@ -10,6 +10,7 @@ git:
 
 install:
   - export GOPATH="$HOME/gopath"
+  - go get -v -u golang.org/x/lint/golint
   - go get -v -t -d github.com/jaztec/go-binance/...
 
 script:
