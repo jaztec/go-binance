@@ -28,7 +28,12 @@ func main() {
 		panic(err)
 	}
 
-	a, err := b.(binance.APICaller).Account()
+	caller, ok := b.(binance.APICaller)
+	if !ok {
+		panic("Not an APICaller")
+	}
+
+	a, err := caller.Account()
 	if err != nil {
 		panic(err)
 	}

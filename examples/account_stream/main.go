@@ -32,10 +32,15 @@ func main() {
 		panic(err)
 	}
 
+	caller, ok := b.(binance.APICaller)
+	if !ok {
+		panic("Not an APICaller")
+	}
+
 	ctx, cancelFn := context.WithCancel(context.Background())
 	defer cancelFn()
-	// use lowercase for streams
-	ch, err := b.Stream().(binance.StreamCaller).UserDataStream(ctx)
+
+	ch, err := caller.StreamCaller().UserDataStream(ctx)
 	if err != nil {
 		panic(err)
 	}

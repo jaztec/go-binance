@@ -79,6 +79,8 @@ type API interface {
 
 // APICaller exposes readily implemented calls for the Binance REST API
 type APICaller interface {
+	API
+
 	// Account information
 	Account() (ai model.AccountInfo, err error)
 	// AllOrders for a symbol from the user account
@@ -97,6 +99,9 @@ type APICaller interface {
 	Ticker24h(symbol string) ([]model.TickerStatistics, error)
 	// TickerPrice returns price information about a symbol
 	TickerPrice(symbol string) ([]model.Price, error)
+
+	// StreamCaller returns a stream with readily implemented functions
+	StreamCaller() StreamCaller
 }
 
 type api struct {
@@ -116,6 +121,10 @@ func (a *api) exchangeInfoValid() bool {
 
 func (a *api) Stream() Streamer {
 	return a.streamer
+}
+
+func (a *api) StreamCaller() StreamCaller {
+	return a.streamer.(StreamCaller)
 }
 
 // NewAPI will return a new API interface fully setup to run

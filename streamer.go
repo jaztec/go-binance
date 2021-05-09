@@ -21,6 +21,8 @@ type Streamer interface {
 
 // StreamCaller exposes readily implemented calls to the Binance websocket API
 type StreamCaller interface {
+	Streamer
+
 	// UserDataStream updates when user account changes have occurred
 	UserDataStream(ctx context.Context) (<-chan model.UserAccountUpdate, error)
 	// Kline data for a list of tokens
