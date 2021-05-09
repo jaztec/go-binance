@@ -1,7 +1,6 @@
 package binance
 
 import (
-	"errors"
 	"net/http"
 	"strconv"
 	"time"
@@ -63,6 +62,8 @@ type APIConfig struct {
 	BaseURI string
 	// BaseStreamURI for the websocket API. Will default to BaseStreamURI
 	BaseStreamURI string
+	// Logger allows setting a custom logger
+	Logger Logger
 }
 
 // API interface exposes all the available (implemented) endpoints to the Binance REST API. The Streamer can be
@@ -127,9 +128,11 @@ func (a *api) StreamCaller() StreamCaller {
 	return a.streamer.(StreamCaller)
 }
 
-func NewAPI(cfg APIConfig, logger Logger) (API, error) {
-	if logger == nil {
-		return nil, errors.New("api expects an instantiated logger")
+func newAPI(cfg APIConfig) (*api, error) {
+	var logger Logger
+	logger = simpleLogger{}
+	if cfg.Logger != nil {
+		logger = cfg.Logger
 	}
 	if cfg.BaseURI == "" {
 		cfg.BaseURI = BaseAPIURI
@@ -151,27 +154,11 @@ func NewAPI(cfg APIConfig, logger Logger) (API, error) {
 	return a, nil
 }
 
+func NewAPI(cfg APIConfig) (API, error) {
+	return newAPI(cfg)
+}
+
 // NewAPICaller will return a new APICaller interface fully setup to run
-func NewAPICaller(cfg APIConfig, logger Logger) (APICaller, error) {
-	if logger == nil {
-		return nil, errors.New("api expects an instantiated logger")
-	}
-	if cfg.BaseURI == "" {
-		cfg.BaseURI = BaseAPIURI
-	}
-	if cfg.BaseStreamURI == "" {
-		cfg.BaseStreamURI = BaseStreamURI
-	}
-	a := &api{
-		cfg: cfg,
-		checker: &weightChecker{
-			allowed: true,
-			weight:  0,
-		},
-		logger: logger,
-	}
-
-	a.streamer = newStreamer(a, logger)
-
-	return a, nil
+func NewAPICaller(cfg APIConfig) (APICaller, error) {
+	return newAPI(cfg)
 }
