@@ -19,7 +19,7 @@ func main() {
 	ctx, cancelFn := context.WithCancel(context.Background())
 	defer cancelFn()
 
-	ch, err := b.Stream().(binance.StreamCaller).Kline(ctx, []string{"ETHBTC"}, "1m")
+	ch, err := b.StreamCaller().Kline(ctx, []string{"ETHBTC"}, "1m")
 	if err != nil {
 		panic(err)
 	}
