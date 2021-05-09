@@ -48,10 +48,14 @@ func (p *parameters) Set(key string, value ...string) {
 }
 
 // NewParameters returns a new parameter bag
-func NewParameters(initialLength int) Parameters {
+func NewParameters(initialLength ...int) Parameters {
+	i := 0
+	if len(initialLength) > 0 {
+		i = initialLength[0]
+	}
 	return &parameters{
-		keys:   make([]string, 0, initialLength),
-		values: make([][]string, 0, initialLength),
+		keys:   make([]string, 0, i),
+		values: make([][]string, 0, i),
 	}
 }
 
