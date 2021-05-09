@@ -77,12 +77,13 @@ var _ = Describe("Api", func() {
 
 	Context("call API endpoints", func() {
 		newAPI := func(uri string) binance.API {
-			a, _ := binance.NewAPI(binance.APIConfig{
+			a, err := binance.NewAPI(binance.APIConfig{
 				Key:           apiKey,
 				Secret:        apiSecret,
 				BaseURI:       uri,
 				BaseStreamURI: strings.ReplaceAll(uri, "ws", "http"),
 			}, testLogger{})
+			Expect(err).To(BeNil())
 			return a
 		}
 
@@ -133,20 +134,34 @@ var _ = Describe("Api", func() {
 		})
 
 		Context("Work on AvgPrice", func() {
-			It("should work on success", func() {
+			var ts *httptest.Server
+			var a binance.API
+
+			BeforeEach(func() {
 				res := loadFixture("avg_price_data")
-				ts := testServer("/api/v3/avgPrice", map[string]struct{}{
+				ts = testServer("/api/v3/avgPrice", map[string]struct{}{
 					"symbol": {},
 				}, http.StatusOK, res)
-				defer ts.Close()
 
-				a := newAPI(ts.URL)
+				a = newAPI(ts.URL)
+			})
 
+			AfterEach(func() {
+				ts.Close()
+			})
+
+			It("should work on regular call", func() {
 				av, err := a.AvgPrice("ETHBTC")
-				Expect(err).To(BeNil(), "calling Account should not return error")
+				Expect(err).To(BeNil(), "calling AvgPrice should not return error")
 
 				Expect(av.Mins).To(Equal(5))
 				Expect(av.Price).To(Equal("0.06656334"))
+			})
+
+			It("should detect missing symbol", func() {
+				_, err := a.AvgPrice("")
+				Expect(err).ToNot(BeNil())
+				Expect(err).To(Equal(binance.NoSymbolProvided))
 			})
 		})
 	})
