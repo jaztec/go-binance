@@ -35,7 +35,7 @@ func (s *streamer) keepAlive(ctx context.Context, path string, interval time.Dur
 		for {
 			select {
 			case <-tC:
-				_, _ = s.api.doRequest(http.MethodPut, path, nil)
+				_, _ = s.api.Request(http.MethodPut, path, nil)
 			case <-ctx.Done():
 				return
 			}

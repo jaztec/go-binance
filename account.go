@@ -20,7 +20,7 @@ func (a *api) Account() (ai model.AccountInfo, err error) {
 	q := NewParameters(1)
 	q.Set("timestamp", strconv.FormatInt(time.Now().Unix()*1000, 10))
 
-	body, err := a.doRequest(http.MethodGet, accountPath, q)
+	body, err := a.Request(http.MethodGet, accountPath, q)
 	if err != nil {
 		return ai, err
 	}

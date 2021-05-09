@@ -17,7 +17,7 @@ func (a *api) AvgPrice(symbol string) (ap model.AvgPrice, err error) {
 	q := NewParameters(1)
 	q.Set("symbol", symbol)
 
-	body, err := a.doRequest(http.MethodGet, avgPricePath, q)
+	body, err := a.Request(http.MethodGet, avgPricePath, q)
 	if err != nil {
 		return ap, err
 	}

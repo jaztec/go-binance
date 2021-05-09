@@ -86,12 +86,15 @@ func (a *api) request(method string, path string, query Parameters) (*http.Reque
 	return r, nil
 }
 
-func (a *api) doRequest(method, path string, q Parameters) ([]byte, error) {
+// Request makes an actual request to the Binance API. It will check the API rate limits
+// and block any requests for the period defined by the API when in violation. The function
+// will return the raw body of the result on success or an error on failure.
+func (a *api) Request(method, path string, params Parameters) ([]byte, error) {
 	if !a.checker.allowed {
 		return nil, AtTimeout
 	}
 
-	req, err := a.request(method, path, q)
+	req, err := a.request(method, path, params)
 	if err != nil {
 		return nil, err
 	}
@@ -117,7 +120,7 @@ func (a *api) doRequest(method, path string, q Parameters) ([]byte, error) {
 		if err != nil {
 			return nil, err
 		}
-		return nil, resErr
+		return nil, APIError{err: &resErr}
 	}
 
 	return resBody, nil

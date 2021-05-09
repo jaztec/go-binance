@@ -68,6 +68,11 @@ type APIConfig struct {
 // API interface exposes all the available (implemented) endpoints to the Binance REST API. The Streamer can be
 // used to start streams onto websockets.
 type API interface {
+	// Request makes an actual request to the Binance API. It will check the API rate limits
+	// and deactivate the API for the period defined by the API when in violation. The function
+	// will return the raw body of the result on success or an error on failure.
+	Request(method, path string, params Parameters) ([]byte, error)
+
 	// Account information
 	Account() (ai model.AccountInfo, err error)
 	// AllOrders for a symbol from the user account

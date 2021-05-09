@@ -16,7 +16,7 @@ func (a *api) Ticker24h(symbol string) (ts []model.TickerStatistics, err error) 
 		q.Set("symbol", symbol)
 	}
 
-	body, err := a.doRequest(http.MethodGet, ticker24hPath, q)
+	body, err := a.Request(http.MethodGet, ticker24hPath, q)
 	if err != nil {
 		return nil, err
 	}

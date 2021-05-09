@@ -16,7 +16,7 @@ func (a *api) TickerPrice(symbol string) ([]model.Price, error) {
 		q.Set("symbol", symbol)
 	}
 
-	body, err := a.doRequest(http.MethodGet, pricesPath, q)
+	body, err := a.Request(http.MethodGet, pricesPath, q)
 	if err != nil {
 		return nil, err
 	}

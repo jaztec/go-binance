@@ -11,7 +11,7 @@ import (
 const exchangeInfoPath = "/api/v3/exchangeInfo"
 
 func (a *api) ExchangeInfo() (ei model.ExchangeInfo, err error) {
-	body, err := a.doRequest(http.MethodGet, exchangeInfoPath, nil)
+	body, err := a.Request(http.MethodGet, exchangeInfoPath, nil)
 	if err != nil {
 		return
 	}

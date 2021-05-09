@@ -15,7 +15,7 @@ import (
 const userDataStreamPath = "/api/v3/userDataStream"
 
 func (s *streamer) UserDataStream(ctx context.Context) (<-chan model.UserAccountUpdate, error) {
-	res, err := s.api.doRequest(http.MethodPost, userDataStreamPath, nil)
+	res, err := s.api.Request(http.MethodPost, userDataStreamPath, nil)
 	if err != nil {
 		return nil, err
 	}

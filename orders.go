@@ -41,7 +41,7 @@ func (a *api) AllOrders(symbol string, startTime, endTime int64, limit int) (uo 
 	}
 	q.Set("timestamp", strconv.FormatInt(time.Now().Unix()*1000, 10))
 
-	body, err := a.doRequest(http.MethodGet, allOrdersPath, q)
+	body, err := a.Request(http.MethodGet, allOrdersPath, q)
 	if err != nil {
 		return uo, err
 	}
@@ -64,7 +64,7 @@ func (a *api) Depth(symbol string, limit int) (o model.Orders, err error) {
 		q.Set("limit", strconv.Itoa(limit))
 	}
 
-	body, err := a.doRequest(http.MethodGet, depthPath, q)
+	body, err := a.Request(http.MethodGet, depthPath, q)
 	if err != nil {
 		return o, err
 	}
@@ -112,7 +112,7 @@ func (a *api) doOrder(path string, symbol string, side model.OrderSide, orderTyp
 
 	p.Set("timestamp", strconv.FormatInt(time.Now().Unix()*1000, 10))
 
-	res, err := a.doRequest(http.MethodPost, path, p)
+	res, err := a.Request(http.MethodPost, path, p)
 	if err != nil {
 		return nil, err
 	}
