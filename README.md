@@ -13,7 +13,41 @@ Binance V3 REST and Websocket API's.
 
 ### Examples
 
-You can find examples inside the `examples` directory in the repository.
+You can find examples inside the [examples](https://github.com/jaztec/go-binance/tree/main/examples) directory in the repository.
+
+As you can see setting up an instance is easy. The following snippet will give you an overview of your account assets:
+
+```go
+package main
+
+import (
+	"fmt"
+	"flag"
+	"github.com/jaztec/go-binance"
+)
+
+func main() {
+	key := flag.String("key", "none", "The API key provided by Binance")
+	secret := flag.String("secret", "none", "The secret that belongs to the API key")
+	flag.Parse()
+
+	b, err := binance.NewAPICaller(binance.APIConfig{
+		Key:    *key,
+		Secret: *secret,
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	a, err := b.Account()
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(a)
+}
+
+```
 
 ### Interfaces
 
