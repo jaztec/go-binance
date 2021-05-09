@@ -31,7 +31,7 @@ func testServer(expectedPath string, expectedQueryParts map[string]struct{}, sta
 		Expect(r.URL.Path).To(Equal(expectedPath))
 		for k, _ := range r.URL.Query() {
 			_, ok := expectedQueryParts[k]
-			Expect(ok).To(Equal(true))
+			Expect(ok).To(Equal(true), fmt.Sprintf("Expected %s to be present", k))
 		}
 		_, _ = w.Write(response)
 	}))
@@ -129,6 +129,24 @@ var _ = Describe("Api", func() {
 					Code: 0,
 					Msg:  "",
 				}))
+			})
+		})
+
+		Context("Work on AvgPrice", func() {
+			It("should work on success", func() {
+				res := loadFixture("avg_price_data")
+				ts := testServer("/api/v3/avgPrice", map[string]struct{}{
+					"symbol": {},
+				}, http.StatusOK, res)
+				defer ts.Close()
+
+				a := newAPI(ts.URL)
+
+				av, err := a.AvgPrice("ETHBTC")
+				Expect(err).To(BeNil(), "calling Account should not return error")
+
+				Expect(av.Mins).To(Equal(5))
+				Expect(av.Price).To(Equal("0.06656334"))
 			})
 		})
 	})

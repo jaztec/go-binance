@@ -28,6 +28,6 @@ func (pc PriceCollection) Less(i, j int) bool { return pc[i].Price() < pc[j].Pri
 
 // AvgPrice holds the average price over the provided minutes
 type AvgPrice struct {
-	Min   int    `json:"min"`
+	Mins  int    `json:"mins"`
 	Price string `json:"price"`
 }
