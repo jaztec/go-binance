@@ -48,7 +48,7 @@ func newAPI(uri string) binance.APICaller {
 		Secret:        apiSecret,
 		BaseURI:       uri,
 		BaseStreamURI: strings.ReplaceAll(uri, "ws", "http"),
-	}, testLogger{})
+	})
 	Expect(err).To(BeNil())
 	return a.(binance.APICaller)
 }
@@ -70,20 +70,8 @@ var _ = Describe("Api", func() {
 				Secret:        apiSecret,
 				BaseURI:       "http://mies.mees",
 				BaseStreamURI: "ws://mies.mees",
-			}, testLogger{})
+			})
 			Expect(err).To(BeNil())
-		})
-
-		It("should create a new API", func() {
-			Expect(a).ToNot(BeNil())
-
-			_, err := binance.NewAPICaller(binance.APIConfig{
-				Key:           apiKey,
-				Secret:        apiSecret,
-				BaseURI:       "http://mies.mees",
-				BaseStreamURI: "ws://mies.mees",
-			}, nil)
-			Expect(err).ToNot(BeNil(), "Error should not be nil when no logger was provided")
 		})
 
 		It("should have an instance of a Stream", func() {

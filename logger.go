@@ -12,6 +12,6 @@ type Logger interface {
 type simpleLogger struct{}
 
 func (simpleLogger) Log(vals ...interface{}) error {
-	log.Println(vals)
+	log.Println(vals...)
 	return nil
 }

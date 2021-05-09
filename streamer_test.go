@@ -95,7 +95,7 @@ var _ = Describe("Stream", func() {
 					Secret:        apiSecret,
 					BaseURI:       s.URL,
 					BaseStreamURI: strings.ReplaceAll(s.URL, "http", "ws"),
-				}, testLogger{})
+				})
 				Expect(err).To(BeNil())
 			}
 

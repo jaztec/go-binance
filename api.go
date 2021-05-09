@@ -154,6 +154,7 @@ func newAPI(cfg APIConfig) (*api, error) {
 	return a, nil
 }
 
+// NewAPI will return a new structure implementing the API interface
 func NewAPI(cfg APIConfig) (API, error) {
 	return newAPI(cfg)
 }

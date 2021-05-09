@@ -2,20 +2,12 @@ package main
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/jaztec/go-binance"
 )
 
-type logger struct{}
-
-func (*logger) Log(vals ...interface{}) error {
-	log.Println(vals...)
-	return nil
-}
-
 func main() {
-	b, err := binance.NewAPICaller(binance.APIConfig{}, &logger{})
+	b, err := binance.NewAPICaller(binance.APIConfig{})
 	if err != nil {
 		panic(err)
 	}
