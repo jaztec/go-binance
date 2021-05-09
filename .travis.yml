@@ -1,0 +1,19 @@
+language: go
+
+go:
+  - 1.15.x
+  - 1.16.x
+  - tip
+
+git:
+  depth: 1
+
+install:
+  - export GOPATH="$HOME/gopath"
+  - go get -v -t -d github.com/jaztec/go-binance/...
+
+script:
+  - sh ./scripts/test.sh
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)

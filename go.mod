@@ -1,6 +1,6 @@
 module github.com/jaztec/go-binance
 
-go 1.16
+go 1.15
 
 require (
 	github.com/dchest/uniuri v0.0.0-20200228104902-7aecb25e1fe5
