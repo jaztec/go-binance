@@ -20,9 +20,14 @@ const (
 	apiSecret = "noot"
 )
 
-func testServer(expectedPath string, expectedQueryParts map[string]struct{}, status int, response []byte) *httptest.Server {
+func testServer(expectedPath string, expectedQueryParts map[string]struct{}, status int, response []byte, responseHeaders map[string]string) *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer GinkgoRecover()
+		if responseHeaders != nil {
+			for k, v := range responseHeaders {
+				w.Header().Set(k, v)
+			}
+		}
 		if status != http.StatusOK {
 			w.WriteHeader(status)
 			_, _ = w.Write(response)
@@ -35,6 +40,19 @@ func testServer(expectedPath string, expectedQueryParts map[string]struct{}, sta
 		}
 		_, _ = w.Write(response)
 	}))
+}
+
+func newAPI(uri string) binance.API {
+	defer GinkgoRecover()
+
+	a, err := binance.NewAPI(binance.APIConfig{
+		Key:           apiKey,
+		Secret:        apiSecret,
+		BaseURI:       uri,
+		BaseStreamURI: strings.ReplaceAll(uri, "ws", "http"),
+	}, testLogger{})
+	Expect(err).To(BeNil())
+	return a
 }
 
 func loadFixture(name string) []byte {
@@ -75,17 +93,45 @@ var _ = Describe("Api", func() {
 		})
 	})
 
+	Context("API weight results must be respected", func() {
+		Context("Should halt on warning", func() {
+			It("should respect API limits", func() {
+				ts := testServer("/api/v3/avgPrice", map[string]struct{}{
+					"symbol": {},
+				}, http.StatusTooManyRequests, nil, map[string]string{"Retry-After": "30"})
+				defer ts.Close()
+
+				a := newAPI(ts.URL)
+				_, err := a.AvgPrice("ETHBTC")
+				Expect(err).ToNot(BeNil())
+				Expect(err.Error()).To(Equal(binance.TooMuchCalls.Error()))
+
+				_, err = a.AvgPrice("ETHBTC")
+				Expect(err).ToNot(BeNil())
+				Expect(err.Error()).To(Equal(binance.AtTimeout.Error()))
+			})
+		})
+
+		Context("Should halt on block", func() {
+			It("should respect API limits", func() {
+				ts := testServer("/api/v3/avgPrice", map[string]struct{}{
+					"symbol": {},
+				}, http.StatusTeapot, nil, map[string]string{"Retry-After": "30"})
+				defer ts.Close()
+
+				a := newAPI(ts.URL)
+				_, err := a.AvgPrice("ETHBTC")
+				Expect(err).ToNot(BeNil())
+				Expect(err.Error()).To(Equal(binance.Blocked.Error()))
+
+				_, err = a.AvgPrice("ETHBTC")
+				Expect(err).ToNot(BeNil())
+				Expect(err.Error()).To(Equal(binance.AtTimeout.Error()))
+			})
+		})
+	})
+
 	Context("call API endpoints", func() {
-		newAPI := func(uri string) binance.API {
-			a, err := binance.NewAPI(binance.APIConfig{
-				Key:           apiKey,
-				Secret:        apiSecret,
-				BaseURI:       uri,
-				BaseStreamURI: strings.ReplaceAll(uri, "ws", "http"),
-			}, testLogger{})
-			Expect(err).To(BeNil())
-			return a
-		}
 
 		Context("should call account data", func() {
 			It("should work on success", func() {
@@ -96,7 +142,7 @@ var _ = Describe("Api", func() {
 				ts := testServer("/api/v3/account", map[string]struct{}{
 					"timestamp": {},
 					"signature": {},
-				}, http.StatusOK, res)
+				}, http.StatusOK, res, nil)
 				defer ts.Close()
 
 				a := newAPI(ts.URL)
@@ -119,7 +165,7 @@ var _ = Describe("Api", func() {
 				ts := testServer("/api/v3/account", map[string]struct{}{
 					"timestamp": {},
 					"signature": {},
-				}, http.StatusInternalServerError, []byte("{}"))
+				}, http.StatusInternalServerError, []byte("{}"), nil)
 				defer ts.Close()
 
 				a := newAPI(ts.URL)
@@ -141,7 +187,7 @@ var _ = Describe("Api", func() {
 				res := loadFixture("avg_price_data")
 				ts = testServer("/api/v3/avgPrice", map[string]struct{}{
 					"symbol": {},
-				}, http.StatusOK, res)
+				}, http.StatusOK, res, nil)
 
 				a = newAPI(ts.URL)
 			})

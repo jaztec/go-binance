@@ -21,7 +21,7 @@ type weightChecker struct {
 	weight  int
 }
 
-func (wc weightChecker) deactivate(seconds int) {
+func (wc *weightChecker) deactivate(seconds int) {
 	wc.allowed = false
 	go func(seconds int) {
 		tC := time.Tick(time.Second * time.Duration(seconds))
@@ -30,7 +30,7 @@ func (wc weightChecker) deactivate(seconds int) {
 	}(seconds)
 }
 
-func (wc weightChecker) checkResponse(response *http.Response) *APIError {
+func (wc *weightChecker) checkResponse(response *http.Response) error {
 	fn := func(response *http.Response) {
 		retry := response.Header.Get("Retry-After")
 		if retry == "" {
@@ -44,11 +44,11 @@ func (wc weightChecker) checkResponse(response *http.Response) *APIError {
 	}
 	if response.StatusCode == http.StatusTooManyRequests {
 		fn(response)
-		return &TooMuchCalls
+		return TooMuchCalls
 	}
 	if response.StatusCode == http.StatusTeapot {
 		fn(response)
-		return &Blocked
+		return Blocked
 	}
 	return nil
 }
@@ -93,7 +93,7 @@ type API interface {
 
 type api struct {
 	cfg          APIConfig
-	checker      weightChecker
+	checker      *weightChecker
 	logger       Logger
 	streamer     Streamer
 	exchangeInfo *model.ExchangeInfo
@@ -123,7 +123,7 @@ func NewAPI(cfg APIConfig, logger Logger) (API, error) {
 	}
 	a := &api{
 		cfg: cfg,
-		checker: weightChecker{
+		checker: &weightChecker{
 			allowed: true,
 			weight:  0,
 		},
