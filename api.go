@@ -127,7 +127,31 @@ func (a *api) StreamCaller() StreamCaller {
 	return a.streamer.(StreamCaller)
 }
 
-// NewAPICaller will return a new API interface fully setup to run
+func NewAPI(cfg APIConfig, logger Logger) (API, error) {
+	if logger == nil {
+		return nil, errors.New("api expects an instantiated logger")
+	}
+	if cfg.BaseURI == "" {
+		cfg.BaseURI = BaseAPIURI
+	}
+	if cfg.BaseStreamURI == "" {
+		cfg.BaseStreamURI = BaseStreamURI
+	}
+	a := &api{
+		cfg: cfg,
+		checker: &weightChecker{
+			allowed: true,
+			weight:  0,
+		},
+		logger: logger,
+	}
+
+	a.streamer = newStreamer(a, logger)
+
+	return a, nil
+}
+
+// NewAPICaller will return a new APICaller interface fully setup to run
 func NewAPICaller(cfg APIConfig, logger Logger) (APICaller, error) {
 	if logger == nil {
 		return nil, errors.New("api expects an instantiated logger")
