@@ -28,7 +28,7 @@ func main() {
 		panic(err)
 	}
 
-	a, err := b.Account()
+	a, err := b.(binance.APICaller).Account()
 	if err != nil {
 		panic(err)
 	}

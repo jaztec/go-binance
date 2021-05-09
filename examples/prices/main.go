@@ -20,7 +20,7 @@ func main() {
 		panic(err)
 	}
 
-	p, err := b.AvgPrice("ETHBTC")
+	p, err := b.(binance.APICaller).AvgPrice("ETHBTC")
 	if err != nil {
 		panic(err)
 	}

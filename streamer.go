@@ -15,7 +15,13 @@ import (
 
 // Streamer defines functions that are available in the Binance Websocket API.
 type Streamer interface {
-	// UserDataStream updates when user account changes have occured
+	Subscribe(ctx context.Context, params []string) (<-chan model.StreamData, error)
+	Unsubscribe(ctx context.Context, params []string) error
+}
+
+// StreamCaller exposes readily implemented calls to the Binance websocket API
+type StreamCaller interface {
+	// UserDataStream updates when user account changes have occurred
 	UserDataStream(ctx context.Context) (<-chan model.UserAccountUpdate, error)
 	// Kline data for a list of tokens
 	Kline(ctx context.Context, symbols []string, interval string) (<-chan model.KlineData, error)
@@ -27,6 +33,21 @@ type streamer struct {
 	api     *api
 	logger  Logger
 	streams []*stream
+}
+
+func (s *streamer) Subscribe(ctx context.Context, params []string) (<-chan model.StreamData, error) {
+	st, err := s.stream(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return st.subscribe(params)
+}
+func (s *streamer) Unsubscribe(ctx context.Context, params []string) error {
+	st, err := s.stream(ctx)
+	if err != nil {
+		return err
+	}
+	return st.unsubscribe(params)
 }
 
 func (s *streamer) keepAlive(ctx context.Context, path string, interval time.Duration) {

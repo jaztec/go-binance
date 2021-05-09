@@ -35,7 +35,7 @@ func main() {
 	ctx, cancelFn := context.WithCancel(context.Background())
 	defer cancelFn()
 	// use lowercase for streams
-	ch, err := b.Streamer().UserDataStream(ctx)
+	ch, err := b.Stream().(binance.StreamCaller).UserDataStream(ctx)
 	if err != nil {
 		panic(err)
 	}

@@ -8,8 +8,6 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/jaztec/go-binance/model"
-
 	"github.com/jaztec/go-binance"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -42,7 +40,7 @@ func testServer(expectedPath string, expectedQueryParts map[string]struct{}, sta
 	}))
 }
 
-func newAPI(uri string) binance.API {
+func newAPI(uri string) binance.APICaller {
 	defer GinkgoRecover()
 
 	a, err := binance.NewAPI(binance.APIConfig{
@@ -52,7 +50,7 @@ func newAPI(uri string) binance.API {
 		BaseStreamURI: strings.ReplaceAll(uri, "ws", "http"),
 	}, testLogger{})
 	Expect(err).To(BeNil())
-	return a
+	return a.(binance.APICaller)
 }
 
 func loadFixture(name string) []byte {
@@ -88,8 +86,8 @@ var _ = Describe("Api", func() {
 			Expect(err).ToNot(BeNil(), "Error should not be nil when no logger was provided")
 		})
 
-		It("should have an instance of a Streamer", func() {
-			Expect(a.Streamer()).ToNot(BeNil())
+		It("should have an instance of a Stream", func() {
+			Expect(a.Stream()).ToNot(BeNil())
 		})
 	})
 
@@ -172,16 +170,13 @@ var _ = Describe("Api", func() {
 
 				_, err := a.Account()
 				Expect(err).ToNot(BeNil())
-				Expect(err).To(Equal(model.Error{
-					Code: 0,
-					Msg:  "",
-				}))
+				Expect(err.Error()).To(Equal("code=0, msg="))
 			})
 		})
 
 		Context("Work on AvgPrice", func() {
 			var ts *httptest.Server
-			var a binance.API
+			var a binance.APICaller
 
 			BeforeEach(func() {
 				res := loadFixture("avg_price_data")

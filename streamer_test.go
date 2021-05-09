@@ -83,8 +83,8 @@ func startTestStreamServer(withStopper uint32, afterStopped chan binance.Subscri
 	})
 }
 
-var _ = Describe("Streamer", func() {
-	Context("Create an API with a Streamer", func() {
+var _ = Describe("Stream", func() {
+	Context("Create an API with a Stream", func() {
 		Context("Should connect to stream and subscribe to channels", func() {
 			var a binance.API
 			var start = func(withStopper uint32, afterStopped chan binance.SubscribeMessage) {
@@ -104,27 +104,27 @@ var _ = Describe("Streamer", func() {
 			})
 
 			It("should have created a streamer", func() {
-				Expect(a.Streamer()).ToNot(BeNil())
+				Expect(a.Stream()).ToNot(BeNil())
 			})
 
 			It("should call Kline function", func() {
 				ctx, cancelFn := context.WithCancel(context.Background())
 				defer cancelFn()
-				_, err := a.Streamer().Kline(ctx, []string{"ETHBTC"}, "5m")
+				_, err := a.Stream().(binance.StreamCaller).Kline(ctx, []string{"ETHBTC"}, "5m")
 				Expect(err).To(BeNil())
 			})
 
 			It("should call UserDataStream function", func() {
 				ctx, cancelFn := context.WithCancel(context.Background())
 				defer cancelFn()
-				_, err := a.Streamer().UserDataStream(ctx)
+				_, err := a.Stream().(binance.StreamCaller).UserDataStream(ctx)
 				Expect(err).To(BeNil())
 			})
 
 			It("should call TickerArr function", func() {
 				ctx, cancelFn := context.WithCancel(context.Background())
 				defer cancelFn()
-				_, err := a.Streamer().TickerArr(ctx)
+				_, err := a.Stream().(binance.StreamCaller).TickerArr(ctx)
 				Expect(err).To(BeNil())
 			})
 
@@ -136,11 +136,11 @@ var _ = Describe("Streamer", func() {
 				defer cancelFn()
 				var err error
 
-				_, err = a.Streamer().Kline(ctx, []string{"ETHBTC"}, "5m")
+				_, err = a.Stream().(binance.StreamCaller).Kline(ctx, []string{"ETHBTC"}, "5m")
 				Expect(err).To(BeNil())
-				_, err = a.Streamer().UserDataStream(ctx)
+				_, err = a.Stream().(binance.StreamCaller).UserDataStream(ctx)
 				Expect(err).To(BeNil())
-				_, err = a.Streamer().TickerArr(ctx)
+				_, err = a.Stream().(binance.StreamCaller).TickerArr(ctx)
 				Expect(err).To(BeNil())
 
 				Expect(<-afterStopped).To(Equal(binance.SubscribeMessage{
