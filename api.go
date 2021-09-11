@@ -100,6 +100,8 @@ type APICaller interface {
 	Ticker24h(symbol string) ([]model.TickerStatistics, error)
 	// TickerPrice returns price information about a symbol
 	TickerPrice(symbol string) ([]model.Price, error)
+	// MyTrades returns trades performed by a user in a time window
+	MyTrades(symbol string, startTime, endTime int64, limit int) (t []model.UserTrade, err error)
 
 	// StreamCaller returns a stream with readily implemented functions
 	StreamCaller() StreamCaller

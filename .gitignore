@@ -3,3 +3,4 @@ artifacts
 .idea
 
 cover.out
+coverage.txt
